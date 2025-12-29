@@ -1,0 +1,1399 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Connaught Place",
+                "id": "ward_cp"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.21,
+                            28.62
+                        ],
+                        [
+                            77.23,
+                            28.62
+                        ],
+                        [
+                            77.23,
+                            28.64
+                        ],
+                        [
+                            77.21,
+                            28.64
+                        ],
+                        [
+                            77.21,
+                            28.62
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Hauz Khas",
+                "id": "ward_hk"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.18,
+                            28.54
+                        ],
+                        [
+                            77.20,
+                            28.54
+                        ],
+                        [
+                            77.20,
+                            28.56
+                        ],
+                        [
+                            77.18,
+                            28.56
+                        ],
+                        [
+                            77.18,
+                            28.54
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Dwarka Sec 8",
+                "id": "ward_dw"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.03,
+                            28.58
+                        ],
+                        [
+                            77.07,
+                            28.58
+                        ],
+                        [
+                            77.07,
+                            28.61
+                        ],
+                        [
+                            77.03,
+                            28.61
+                        ],
+                        [
+                            77.03,
+                            28.58
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Karol Bagh",
+                "id": "ward_kb"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.18,
+                            28.64
+                        ],
+                        [
+                            77.20,
+                            28.64
+                        ],
+                        [
+                            77.20,
+                            28.66
+                        ],
+                        [
+                            77.18,
+                            28.66
+                        ],
+                        [
+                            77.18,
+                            28.64
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Rohini Sec 7",
+                "id": "ward_ro"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.08,
+                            28.72
+                        ],
+                        [
+                            77.12,
+                            28.72
+                        ],
+                        [
+                            77.12,
+                            28.75
+                        ],
+                        [
+                            77.08,
+                            28.75
+                        ],
+                        [
+                            77.08,
+                            28.72
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Saket",
+                "id": "ward_sk"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.20,
+                            28.50
+                        ],
+                        [
+                            77.23,
+                            28.50
+                        ],
+                        [
+                            77.23,
+                            28.52
+                        ],
+                        [
+                            77.20,
+                            28.52
+                        ],
+                        [
+                            77.20,
+                            28.50
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Mayur Vihar",
+                "id": "ward_mv"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.28,
+                            28.60
+                        ],
+                        [
+                            77.32,
+                            28.60
+                        ],
+                        [
+                            77.32,
+                            28.63
+                        ],
+                        [
+                            77.28,
+                            28.63
+                        ],
+                        [
+                            77.28,
+                            28.60
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Punjabi Bagh",
+                "id": "ward_pb"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.11,
+                            28.66
+                        ],
+                        [
+                            77.14,
+                            28.66
+                        ],
+                        [
+                            77.14,
+                            28.69
+                        ],
+                        [
+                            77.11,
+                            28.69
+                        ],
+                        [
+                            77.11,
+                            28.66
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Vasant Kunj",
+                "id": "ward_vk"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.14,
+                            28.51
+                        ],
+                        [
+                            77.17,
+                            28.51
+                        ],
+                        [
+                            77.17,
+                            28.54
+                        ],
+                        [
+                            77.14,
+                            28.54
+                        ],
+                        [
+                            77.14,
+                            28.51
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Janakpuri",
+                "id": "ward_jp"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.07,
+                            28.61
+                        ],
+                        [
+                            77.10,
+                            28.61
+                        ],
+                        [
+                            77.10,
+                            28.63
+                        ],
+                        [
+                            77.07,
+                            28.63
+                        ],
+                        [
+                            77.07,
+                            28.61
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Laxmi Nagar",
+                "id": "ward_ln"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.27,
+                            28.63
+                        ],
+                        [
+                            77.30,
+                            28.63
+                        ],
+                        [
+                            77.30,
+                            28.66
+                        ],
+                        [
+                            77.27,
+                            28.66
+                        ],
+                        [
+                            77.27,
+                            28.63
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Nehru Place",
+                "id": "ward_np"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.24,
+                            28.54
+                        ],
+                        [
+                            77.27,
+                            28.54
+                        ],
+                        [
+                            77.27,
+                            28.57
+                        ],
+                        [
+                            77.24,
+                            28.57
+                        ],
+                        [
+                            77.24,
+                            28.54
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Pitampura",
+                "id": "ward_pt"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.12,
+                            28.69
+                        ],
+                        [
+                            77.15,
+                            28.69
+                        ],
+                        [
+                            77.15,
+                            28.71
+                        ],
+                        [
+                            77.12,
+                            28.71
+                        ],
+                        [
+                            77.12,
+                            28.69
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Shahdara",
+                "id": "ward_sh"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.28,
+                            28.67
+                        ],
+                        [
+                            77.31,
+                            28.67
+                        ],
+                        [
+                            77.31,
+                            28.69
+                        ],
+                        [
+                            77.28,
+                            28.69
+                        ],
+                        [
+                            77.28,
+                            28.67
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Paschim Vihar",
+                "id": "ward_pv"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.09,
+                            28.67
+                        ],
+                        [
+                            77.12,
+                            28.67
+                        ],
+                        [
+                            77.12,
+                            28.69
+                        ],
+                        [
+                            77.09,
+                            28.69
+                        ],
+                        [
+                            77.09,
+                            28.67
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Alaknanda",
+                "id": "ward_al"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.24,
+                            28.52
+                        ],
+                        [
+                            77.27,
+                            28.52
+                        ],
+                        [
+                            77.27,
+                            28.54
+                        ],
+                        [
+                            77.24,
+                            28.54
+                        ],
+                        [
+                            77.24,
+                            28.52
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Malviya Nagar",
+                "id": "ward_mn"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.20,
+                            28.52
+                        ],
+                        [
+                            77.23,
+                            28.52
+                        ],
+                        [
+                            77.23,
+                            28.54
+                        ],
+                        [
+                            77.20,
+                            28.54
+                        ],
+                        [
+                            77.20,
+                            28.52
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "RK Puram",
+                "id": "ward_rk"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.16,
+                            28.56
+                        ],
+                        [
+                            77.19,
+                            28.56
+                        ],
+                        [
+                            77.19,
+                            28.58
+                        ],
+                        [
+                            77.16,
+                            28.58
+                        ],
+                        [
+                            77.16,
+                            28.56
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Narela",
+                "id": "ward_na"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.06,
+                            28.84
+                        ],
+                        [
+                            77.10,
+                            28.84
+                        ],
+                        [
+                            77.10,
+                            28.87
+                        ],
+                        [
+                            77.06,
+                            28.87
+                        ],
+                        [
+                            77.06,
+                            28.84
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Najafgarh",
+                "id": "ward_nj"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            76.96,
+                            28.60
+                        ],
+                        [
+                            77.00,
+                            28.60
+                        ],
+                        [
+                            77.00,
+                            28.63
+                        ],
+                        [
+                            76.96,
+                            28.63
+                        ],
+                        [
+                            76.96,
+                            28.60
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Mundka",
+                "id": "ward_md"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.01,
+                            28.67
+                        ],
+                        [
+                            77.05,
+                            28.67
+                        ],
+                        [
+                            77.05,
+                            28.70
+                        ],
+                        [
+                            77.01,
+                            28.70
+                        ],
+                        [
+                            77.01,
+                            28.67
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Sarita Vihar",
+                "id": "ward_sv"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.28,
+                            28.53
+                        ],
+                        [
+                            77.31,
+                            28.53
+                        ],
+                        [
+                            77.31,
+                            28.55
+                        ],
+                        [
+                            77.28,
+                            28.55
+                        ],
+                        [
+                            77.28,
+                            28.53
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Okhla",
+                "id": "ward_ok"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.26,
+                            28.55
+                        ],
+                        [
+                            77.29,
+                            28.55
+                        ],
+                        [
+                            77.29,
+                            28.57
+                        ],
+                        [
+                            77.26,
+                            28.57
+                        ],
+                        [
+                            77.26,
+                            28.55
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Patparganj",
+                "id": "ward_pg"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.28,
+                            28.61
+                        ],
+                        [
+                            77.31,
+                            28.61
+                        ],
+                        [
+                            77.31,
+                            28.63
+                        ],
+                        [
+                            77.28,
+                            28.63
+                        ],
+                        [
+                            77.28,
+                            28.61
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Vivek Vihar",
+                "id": "ward_vv"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.30,
+                            28.67
+                        ],
+                        [
+                            77.33,
+                            28.67
+                        ],
+                        [
+                            77.33,
+                            28.69
+                        ],
+                        [
+                            77.30,
+                            28.69
+                        ],
+                        [
+                            77.30,
+                            28.67
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Shadipur",
+                "id": "ward_sd"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.14,
+                            28.64
+                        ],
+                        [
+                            77.17,
+                            28.64
+                        ],
+                        [
+                            77.17,
+                            28.66
+                        ],
+                        [
+                            77.14,
+                            28.66
+                        ],
+                        [
+                            77.14,
+                            28.64
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Tilak Nagar",
+                "id": "ward_tn"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.08,
+                            28.63
+                        ],
+                        [
+                            77.11,
+                            28.63
+                        ],
+                        [
+                            77.11,
+                            28.65
+                        ],
+                        [
+                            77.08,
+                            28.65
+                        ],
+                        [
+                            77.08,
+                            28.63
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Vikaspuri",
+                "id": "ward_vp"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.05,
+                            28.64
+                        ],
+                        [
+                            77.08,
+                            28.64
+                        ],
+                        [
+                            77.08,
+                            28.66
+                        ],
+                        [
+                            77.05,
+                            28.66
+                        ],
+                        [
+                            77.05,
+                            28.64
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Uttam Nagar",
+                "id": "ward_un"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.04,
+                            28.61
+                        ],
+                        [
+                            77.07,
+                            28.61
+                        ],
+                        [
+                            77.07,
+                            28.63
+                        ],
+                        [
+                            77.04,
+                            28.63
+                        ],
+                        [
+                            77.04,
+                            28.61
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Preet Vihar",
+                "id": "ward_pr"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.29,
+                            28.69
+                        ],
+                        [
+                            77.32,
+                            28.69
+                        ],
+                        [
+                            77.32,
+                            28.71
+                        ],
+                        [
+                            77.29,
+                            28.71
+                        ],
+                        [
+                            77.29,
+                            28.69
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Kalkaji",
+                "id": "ward_kk"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.24,
+                            28.55
+                        ],
+                        [
+                            77.27,
+                            28.55
+                        ],
+                        [
+                            77.27,
+                            28.57
+                        ],
+                        [
+                            77.24,
+                            28.57
+                        ],
+                        [
+                            77.24,
+                            28.55
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Greater Kailash",
+                "id": "ward_gk"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.23,
+                            28.54
+                        ],
+                        [
+                            77.26,
+                            28.54
+                        ],
+                        [
+                            77.26,
+                            28.56
+                        ],
+                        [
+                            77.23,
+                            28.56
+                        ],
+                        [
+                            77.23,
+                            28.54
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Defence Colony",
+                "id": "ward_dc"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.22,
+                            28.56
+                        ],
+                        [
+                            77.25,
+                            28.56
+                        ],
+                        [
+                            77.25,
+                            28.58
+                        ],
+                        [
+                            77.22,
+                            28.58
+                        ],
+                        [
+                            77.22,
+                            28.56
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Patel Nagar",
+                "id": "ward_pn"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.16,
+                            28.64
+                        ],
+                        [
+                            77.19,
+                            28.64
+                        ],
+                        [
+                            77.19,
+                            28.66
+                        ],
+                        [
+                            77.16,
+                            28.66
+                        ],
+                        [
+                            77.16,
+                            28.64
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Ashok Vihar",
+                "id": "ward_av"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.16,
+                            28.69
+                        ],
+                        [
+                            77.19,
+                            28.69
+                        ],
+                        [
+                            77.19,
+                            28.71
+                        ],
+                        [
+                            77.16,
+                            28.71
+                        ],
+                        [
+                            77.16,
+                            28.69
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Model Town",
+                "id": "ward_mt"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.18,
+                            28.70
+                        ],
+                        [
+                            77.21,
+                            28.70
+                        ],
+                        [
+                            77.21,
+                            28.72
+                        ],
+                        [
+                            77.18,
+                            28.72
+                        ],
+                        [
+                            77.18,
+                            28.70
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Civil Lines",
+                "id": "ward_cl"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.21,
+                            28.67
+                        ],
+                        [
+                            77.24,
+                            28.67
+                        ],
+                        [
+                            77.24,
+                            28.69
+                        ],
+                        [
+                            77.21,
+                            28.69
+                        ],
+                        [
+                            77.21,
+                            28.67
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Kashmere Gate",
+                "id": "ward_kg"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.22,
+                            28.66
+                        ],
+                        [
+                            77.25,
+                            28.66
+                        ],
+                        [
+                            77.25,
+                            28.68
+                        ],
+                        [
+                            77.22,
+                            28.68
+                        ],
+                        [
+                            77.22,
+                            28.66
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Chandni Chowk",
+                "id": "ward_cc"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.22,
+                            28.64
+                        ],
+                        [
+                            77.25,
+                            28.64
+                        ],
+                        [
+                            77.25,
+                            28.66
+                        ],
+                        [
+                            77.22,
+                            28.66
+                        ],
+                        [
+                            77.22,
+                            28.64
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Rajouri Garden",
+                "id": "ward_rg"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.11,
+                            28.63
+                        ],
+                        [
+                            77.14,
+                            28.63
+                        ],
+                        [
+                            77.14,
+                            28.65
+                        ],
+                        [
+                            77.11,
+                            28.65
+                        ],
+                        [
+                            77.11,
+                            28.63
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Dilshad Garden",
+                "id": "ward_dg"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            77.31,
+                            28.68
+                        ],
+                        [
+                            77.34,
+                            28.68
+                        ],
+                        [
+                            77.34,
+                            28.70
+                        ],
+                        [
+                            77.31,
+                            28.70
+                        ],
+                        [
+                            77.31,
+                            28.68
+                        ]
+                    ]
+                ]
+            }
+        }
+    ]
+}
