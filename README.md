@@ -3,6 +3,10 @@
 
 AirPulse is a high-performance dashboard built to help citizens and government officials track air quality in real time. We built this for the Hack4Delhi 2026 hackathon with a simple goal: make air quality data look as important as financial data. It combines live sensor readings, citizen reports that are verified on-chain, and AI predictions into one premium "Glassmorphic" interface.
 
+## 🌐 Live Demo
+- **Frontend (Vercel)**: [https://air-pulse-one.vercel.app](https://air-pulse-one.vercel.app)
+- **Backend (Render)**: [https://airpulse-server.onrender.com](https://airpulse-server.onrender.com)
+
 ## 🚀 Vision
 We wanted to build the "Bloomberg Terminal" for Air Quality. A tool that feels professional, responsive, and indispensable for decision making. No more boring charts. We want data that feels alive.
 

@@ -11,7 +11,20 @@ const app = express();
 // Middleware
 app.use(express.json()); // Parse JSON bodies
 app.use(cors({
-    origin: process.env.ALLOWED_ORIGIN || 'http://localhost:3000', // Allow frontend
+    origin: function (origin, callback) {
+        const allowedOrigins = [
+            'http://localhost:3000',
+            process.env.ALLOWED_ORIGIN,
+            'https://air-pulse-one.vercel.app'
+        ];
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true // Allow cookies
 }));
 app.use(helmet()); // Secure HTTP headers
