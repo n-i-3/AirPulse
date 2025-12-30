@@ -11,9 +11,8 @@ export default function PrivyWrapper({ children }: { children: React.ReactNode }
             config={{
                 loginMethods: ['email', 'wallet'],
                 appearance: {
-                    theme: 'dark',
+                    theme: 'light',
                     accentColor: '#676FFF',
-                    logo: 'https://your-logo-url',
                 },
                 embeddedWallets: {
                     createOnLogin: 'users-without-wallets',

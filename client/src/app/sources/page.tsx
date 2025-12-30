@@ -44,7 +44,6 @@ export default function WardDashboard() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [expandedWard, setExpandedWard] = useState<string | null>(null);
-    const [viewMode, setViewMode] = useState<'citizen' | 'government'>('citizen');
 
     useEffect(() => {
         fetchData();
@@ -109,26 +108,6 @@ export default function WardDashboard() {
                             <h1 className="text-3xl font-bold text-foreground tracking-tight">Ward-Wise Pollution Action Dashboard</h1>
                             <p className="text-muted-foreground text-sm">Real-time source attribution & actionable recommendations</p>
                         </div>
-                    </div>
-
-                    {/* View Toggle */}
-                    <div className="flex gap-2 p-1 rounded-full bg-secondary/50 border border-border">
-                        <button
-                            onClick={() => setViewMode('citizen')}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${viewMode === 'citizen' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground'
-                                }`}
-                        >
-                            <Users className="h-4 w-4 inline mr-2" />
-                            Citizen View
-                        </button>
-                        <button
-                            onClick={() => setViewMode('government')}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${viewMode === 'government' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground'
-                                }`}
-                        >
-                            <Building2 className="h-4 w-4 inline mr-2" />
-                            Government View
-                        </button>
                     </div>
                 </div>
 
@@ -230,7 +209,7 @@ export default function WardDashboard() {
                                             <div>
                                                 <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                                                     <AlertTriangle className="h-4 w-4 text-primary" />
-                                                    {viewMode === 'citizen' ? 'Citizen Advisory' : 'Policy Actions'}
+                                                    Action Plan
                                                 </h4>
 
                                                 {/* Health Advisory */}
@@ -243,16 +222,24 @@ export default function WardDashboard() {
                                                 </div>
 
                                                 {/* Action Items */}
-                                                <div className="space-y-2">
-                                                    {(viewMode === 'citizen' ?
-                                                        ward.recommendations.for_citizens :
-                                                        ward.recommendations.for_government
-                                                    ).map((item, ridx) => (
-                                                        <div key={ridx} className="text-sm text-muted-foreground flex items-start gap-2">
-                                                            <span className="text-primary mt-1">•</span>
-                                                            <span>{item}</span>
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <span className="text-xs font-bold text-muted-foreground uppercase mb-2 block">Data-Driven Recommendations</span>
+                                                        <div className="space-y-2">
+                                                            {ward.recommendations.for_citizens.map((item, ridx) => (
+                                                                <div key={`cit-${ridx}`} className="text-sm text-muted-foreground flex items-start gap-2">
+                                                                    <span className="text-primary mt-1">•</span>
+                                                                    <span>{item}</span>
+                                                                </div>
+                                                            ))}
+                                                            {ward.recommendations.for_government.map((item, ridx) => (
+                                                                <div key={`gov-${ridx}`} className="text-sm text-muted-foreground flex items-start gap-2">
+                                                                    <span className="text-blue-500 mt-1">•</span>
+                                                                    <span>{item}</span>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                    ))}
+                                                    </div>
                                                 </div>
                                             </div>
 

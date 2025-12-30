@@ -10,6 +10,7 @@ import { Toaster } from 'sonner';
 import { toast } from 'sonner';
 import StatsMap from '@/components/map/StatsMap';
 import { cn } from '@/lib/utils';
+import { generateIdentityCommitment } from '@/lib/zk';
 
 type PollutionCategory = 'industrial' | 'vehicular' | 'construction' | 'waste' | 'other';
 
@@ -31,13 +32,18 @@ export default function ReportPage() {
     const [fileAttached, setFileAttached] = useState(false);
     const [aiVerifying, setAiVerifying] = useState(false);
     const [aiVerified, setAiVerified] = useState(false);
+    const [zkProof, setZkProof] = useState<string | null>(null);
+    const [generatingProof, setGeneratingProof] = useState(false);
 
-    const handleFileUpload = () => {
-        setUploading(true);
-        // Simulate upload & AI scan
-        setTimeout(() => {
-            setUploading(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setSelectedFile(file);
             setFileAttached(true);
+
+            // Auto-start AI Verification on file select
             setAiVerifying(true);
             toast.info("AI Analysis Started", { description: "Scanning image for pollution signatures..." });
 
@@ -46,7 +52,7 @@ export default function ReportPage() {
                 setAiVerified(true);
                 toast.success("AI Verification Complete", { description: "Pollution signature detected (Confidence: 94%)" });
             }, 2000);
-        }, 1500);
+        }
     };
 
     const handleSubmit = async () => {
@@ -60,11 +66,35 @@ export default function ReportPage() {
             // Mock signing process
             const timestamp = new Date().toISOString();
 
+            // Generate ZK Proof
+            setGeneratingProof(true);
+            const proof = await generateIdentityCommitment(user?.id || 'anon', timestamp);
+            setZkProof(proof);
+            setGeneratingProof(false);
+
             // Simulate Blockchain Transaction
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // [REAL] Submit to Backend
+            const reportPayload = {
+                description,
+                category: selectedCategory === 'other' ? customCategory : selectedCategory,
+                location: { lat: 28.61, lng: 77.23 }, // Default to Central Delhi if no geocoding (for demo)
+                zkProof: proof,
+                reporter: user?.wallet?.address || user?.id || 'anon_user'
+            };
+
+            const response = await fetch('http://localhost:5000/api/reports', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reportPayload)
+            });
+
+            if (!response.ok) throw new Error('Failed to save report to server');
+            const savedReport = await response.json();
 
             toast.success("Report Submitted On-Chain!", {
-                description: `Tx Hash: 0x${Math.random().toString(16).slice(2, 42)}`
+                description: `CID: ${savedReport.cid.substring(0, 15)}... | ZK Proof Verified`
             });
 
             setDescription('');
@@ -72,7 +102,8 @@ export default function ReportPage() {
             setCustomCategory('');
             setFileAttached(false);
             setAiVerified(false);
-            
+            setZkProof(null);
+
             // Auto logout for one-time use
             setTimeout(async () => {
                 await logout();
@@ -170,8 +201,8 @@ export default function ReportPage() {
                             {[
                                 { title: "IPFS Storage", desc: "Evidence is stored on distributed networks, ensuring it can never be deleted or altered.", icon: UploadCloud },
                                 { title: "Cryptographic Proof", desc: "Every report is signed by your unique digital signature, verifying authenticity.", icon: ShieldCheck },
-                                { title: "Smart Contracts", desc: "Automated governance triggers immediate action based on validated reports.", icon: Bot },
                                 { title: "Zero-Knowledge", desc: "Report strictly what matters while maintaining complete privacy of your identity.", icon: CheckCircle2 },
+                                { title: "Secure Identity", desc: "Powered by Privy to ensure enterprise-grade wallet security and seamless social login.", icon: ShieldCheck },
                             ].map((feature, i) => (
                                 <Card key={i} className="glass-card border-border/50 bg-background/20 hover:bg-background/40 transition-colors">
                                     <CardHeader className="pb-2">
@@ -290,41 +321,52 @@ export default function ReportPage() {
                             </div>
 
                             {/* Evidence Upload */}
-                            <div
-                                onClick={handleFileUpload}
-                                className={cn(
-                                    "border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden group min-h-[100px]",
-                                    fileAttached ? "border-green-500/50 bg-green-500/5" : "border-border hover:border-primary/50 hover:bg-muted/10"
-                                )}
-                            >
-                                {uploading ? (
-                                    <div className="flex items-center gap-3 animate-pulse">
-                                        <Loader2 className="h-5 w-5 text-primary animate-spin" />
-                                        <span className="text-xs text-muted-foreground">Uploading...</span>
-                                    </div>
-                                ) : fileAttached ? (
-                                    <div className="flex items-center gap-3">
-                                        <CheckCircle2 className="h-6 w-6 text-green-500" />
-                                        <div className="text-left">
-                                            <span className="text-xs font-medium text-green-500 block">Evidence Secured</span>
-                                            {aiVerifying ? (
-                                                <span className="text-[10px] text-primary animate-pulse">Scanning...</span>
-                                            ) : aiVerified && (
-                                                <span className="text-[10px] text-green-400">Verified by AI</span>
-                                            )}
+                            <div>
+                                <input
+                                    type="file"
+                                    id="evidence-upload"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleFileSelect}
+                                />
+                                <label
+                                    htmlFor="evidence-upload"
+                                    className={cn(
+                                        "border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden group min-h-[100px]",
+                                        fileAttached ? "border-green-500/50 bg-green-500/5" : "border-border hover:border-primary/50 hover:bg-muted/10"
+                                    )}
+                                >
+                                    {uploading ? (
+                                        <div className="flex items-center gap-3 animate-pulse">
+                                            <Loader2 className="h-5 w-5 text-primary animate-spin" />
+                                            <span className="text-xs text-muted-foreground">Uploading...</span>
                                         </div>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-full bg-muted/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                            <Camera className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                    ) : fileAttached ? (
+                                        <div className="flex items-center gap-3">
+                                            <CheckCircle2 className="h-6 w-6 text-green-500" />
+                                            <div className="text-left">
+                                                <span className="text-xs font-medium text-green-500 block">
+                                                    {selectedFile ? selectedFile.name : "Evidence Secured"}
+                                                </span>
+                                                {aiVerifying ? (
+                                                    <span className="text-[10px] text-primary animate-pulse">Scanning...</span>
+                                                ) : aiVerified && (
+                                                    <span className="text-[10px] text-green-400">Verified by AI</span>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="text-left">
-                                            <span className="text-xs font-medium block">Upload Evidence</span>
-                                            <span className="text-[10px] text-muted-foreground block">JPG, PNG, MP4</span>
+                                    ) : (
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-8 w-8 rounded-full bg-muted/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                <Camera className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                            </div>
+                                            <div className="text-left">
+                                                <span className="text-xs font-medium block">Upload Evidence</span>
+                                                <span className="text-[10px] text-muted-foreground block">JPG, PNG, MP4</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -342,7 +384,7 @@ export default function ReportPage() {
                                 {loading ? (
                                     <div className="flex items-center gap-2">
                                         <Loader2 className="h-4 w-4 animate-spin" />
-                                        <span>Establishing Consensus...</span>
+                                        <span>{generatingProof ? "Generating ZK Proof..." : "Establishing Consensus..."}</span>
                                     </div>
                                 ) : (
                                     <span className="flex items-center gap-2">

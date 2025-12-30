@@ -40,6 +40,7 @@ const ModernCard = ({ title, children, className, icon: Icon, trend }: { title: 
 export default function Home() {
   const [avgAqi, setAvgAqi] = useState<number>(0);
   const [criticalZones, setCriticalZones] = useState<string[]>([]);
+  const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,6 +48,17 @@ export default function Home() {
       console.log('📊 Fetching dashboard metrics...');
       const features = (wardsData as any).features;
       const wardAqis: { [key: string]: number } = {};
+
+      try {
+        // Fetch Real Reports
+        const reportsRes = await fetch('http://localhost:5000/api/reports');
+        const reportsData = await reportsRes.json();
+        if (Array.isArray(reportsData)) {
+          setReports(reportsData);
+        }
+      } catch (e) {
+        console.error("Failed to fetch reports", e);
+      }
 
       // Fetch AQI for all wards
       for (const feature of features) {
@@ -122,9 +134,11 @@ export default function Home() {
             </div>
           </ModernCard>
 
-          <ModernCard title="Active Reporters" icon={Users} trend="+14 Active">
+          <ModernCard title="Active Reporters" icon={Users} trend="Verified">
             <div className="flex items-end gap-3 mt-1">
-              <span className="text-4xl font-bold tracking-tighter text-foreground">1,203</span>
+              <span className="text-4xl font-bold tracking-tighter text-foreground">
+                {loading ? '--' : reports.length > 0 ? reports.length : 0}
+              </span>
               <div className="flex -space-x-2 mb-1">
                 {[1, 2, 3].map(i => <div key={i} className="h-6 w-6 rounded-full border border-background bg-zinc-800" />)}
               </div>
@@ -262,21 +276,35 @@ export default function Home() {
               </h3>
 
               <div className="space-y-3 overflow-y-auto max-h-[250px] pr-2 scrollbar-none">
-                {[1, 2, 3].map((_, i) => (
-                  <div key={i} className="group flex gap-4 items-start p-3 rounded-2xl hover:bg-muted/30 transition-colors border border-transparent hover:border-border cursor-pointer">
-                    <div className="mt-1 h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
-                    <div>
-                      <h5 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">Illegal Waste Burning</h5>
-                      <p className="text-xs text-muted-foreground mt-0.5">Reported 2m ago from Punjabi Bagh</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-[10px] font-mono bg-muted/10 px-1.5 py-0.5 rounded text-muted-foreground">Hash: 0x82...9f</span>
-                        <span className="text-[10px] font-mono text-green-500 flex items-center gap-1">
-                          <ShieldCheck className="h-2 w-2" /> Verified
-                        </span>
+                {reports.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-8 text-sm">No recent reports found.</div>
+                ) : (
+                  reports.map((report: any, i) => (
+                    <div key={i} className="group flex gap-4 items-start p-3 rounded-2xl hover:bg-muted/30 transition-colors border border-transparent hover:border-border cursor-pointer">
+                      <div className="mt-1 h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
+                      <div>
+                        <h5 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                          {report.metadata?.category || 'Pollution Event'}
+                        </h5>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {report.metadata?.description ? (
+                            report.metadata.description.length > 40
+                              ? report.metadata.description.substring(0, 40) + '...'
+                              : report.metadata.description
+                          ) : 'No description'}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-[10px] font-mono bg-muted/10 px-1.5 py-0.5 rounded text-muted-foreground">
+                            ID: {report.cid ? report.cid.substring(0, 6) : '....'}
+                          </span>
+                          <span className="text-[10px] font-mono text-green-500 flex items-center gap-1">
+                            <ShieldCheck className="h-2 w-2" /> Verified
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
 

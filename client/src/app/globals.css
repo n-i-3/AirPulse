@@ -207,11 +207,12 @@
       0 10px 10px -5px rgba(0, 0, 0, 0.02);
   }
 
-  /* Amber/Gold Glow on Hover */
+  /* Cool White/Blue Glow on Hover (Cleaner than Amber) */
   .dark .glass-card:hover {
     box-shadow:
-      0 0 0 1px var(--primary),
-      0 0 20px -5px var(--primary);
-    /* Neon Amber Glow */
+      0 0 0 1px rgba(255, 255, 255, 0.2),
+      0 0 20px -5px rgba(255, 255, 255, 0.1);
+    /* Clean White Glow */
+    border-color: rgba(255, 255, 255, 0.3);
   }
 }
