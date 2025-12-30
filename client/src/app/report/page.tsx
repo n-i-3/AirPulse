@@ -84,7 +84,7 @@ export default function ReportPage() {
                 reporter: user?.wallet?.address || user?.id || 'anon_user'
             };
 
-            const response = await fetch('http://localhost:5000/api/reports', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reports`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(reportPayload)
@@ -128,7 +128,7 @@ export default function ReportPage() {
                 try {
                     const token = await getAccessToken();
                     if (token) {
-                        const res = await fetch('http://localhost:5000/api/auth/login', {
+                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/login`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ token })

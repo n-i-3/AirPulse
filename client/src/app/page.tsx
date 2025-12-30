@@ -51,7 +51,7 @@ export default function Home() {
 
       try {
         // Fetch Real Reports
-        const reportsRes = await fetch('http://localhost:5000/api/reports');
+        const reportsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/reports`);
         const reportsData = await reportsRes.json();
         if (Array.isArray(reportsData)) {
           setReports(reportsData);
@@ -69,7 +69,7 @@ export default function Home() {
         const lat = coords[1];
 
         try {
-          const response = await fetch(`http://localhost:5000/api/aqi?lat=${lat}&lng=${lng}`);
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/aqi?lat=${lat}&lng=${lng}`);
           const data = await response.json();
 
           if (data && data.aqi) {

@@ -11,7 +11,7 @@ const app = express();
 // Middleware
 app.use(express.json()); // Parse JSON bodies
 app.use(cors({
-    origin: 'http://localhost:3000', // Allow frontend
+    origin: process.env.ALLOWED_ORIGIN || 'http://localhost:3000', // Allow frontend
     credentials: true // Allow cookies
 }));
 app.use(helmet()); // Secure HTTP headers

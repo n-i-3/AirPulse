@@ -53,7 +53,7 @@ export default function WardDashboard() {
 
     const fetchData = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/sources/wards?lat1=28.4&lng1=76.8&lat2=28.9&lng2=77.4');
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/sources/wards?lat1=28.4&lng1=76.8&lat2=28.9&lng2=77.4`);
             const result = await response.json();
             setData(result);
         } catch (err) {

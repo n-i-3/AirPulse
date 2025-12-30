@@ -55,7 +55,7 @@ export default function ForecastPage() {
     const fetchRealTimeAnalytics = async () => {
         try {
             const bounds = WARDS[selectedWard];
-            const response = await fetch(`http://localhost:5000/api/aqi/bounds?lat1=${bounds.lat1}&lng1=${bounds.lng1}&lat2=${bounds.lat2}&lng2=${bounds.lng2}`);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/aqi/bounds?lat1=${bounds.lat1}&lng1=${bounds.lng1}&lat2=${bounds.lat2}&lng2=${bounds.lng2}`);
             const data: StationData[] = await response.json();
 
             if (Array.isArray(data)) {

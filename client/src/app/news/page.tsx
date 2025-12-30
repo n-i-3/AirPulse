@@ -43,7 +43,7 @@ export default function IntelPage() {
             const lat2 = 28.9;
             const lng2 = 77.4;
 
-            const response = await fetch(`http://localhost:5000/api/aqi/bounds?lat1=${lat1}&lng1=${lng1}&lat2=${lat2}&lng2=${lng2}`);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/aqi/bounds?lat1=${lat1}&lng1=${lng1}&lat2=${lat2}&lng2=${lng2}`);
             const data: StationData[] = await response.json();
 
             if (Array.isArray(data)) {

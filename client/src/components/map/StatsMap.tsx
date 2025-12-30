@@ -107,7 +107,7 @@ export default function StatsMap({ onLocationSelect }: StatsMapProps) {
         try {
             console.log(`🌍 Fetching stations for bounds: [${lat1}, ${lng1}] to [${lat2}, ${lng2}]`);
 
-            const response = await fetch(`http://localhost:5000/api/aqi/bounds?lat1=${lat1}&lng1=${lng1}&lat2=${lat2}&lng2=${lng2}`);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/aqi/bounds?lat1=${lat1}&lng1=${lng1}&lat2=${lat2}&lng2=${lng2}`);
             const data = await response.json();
 
             if (Array.isArray(data)) {
@@ -123,7 +123,7 @@ export default function StatsMap({ onLocationSelect }: StatsMapProps) {
 
                 // Clean old cache entries (keep max 10)
                 if (cacheRef.current.size > 10) {
-                    const firstKey = cacheRef.current.keys().next().value;
+                    const firstKey = cacheRef.current.keys().next().value as string;
                     cacheRef.current.delete(firstKey);
                 }
 

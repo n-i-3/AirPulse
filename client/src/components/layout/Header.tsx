@@ -26,8 +26,8 @@ export function Header() {
     const [showTooltip, setShowTooltip] = useState(false);
     const [services, setServices] = useState<ServiceStatus[]>([
         // Core Backend Services (Including Satellite)
-        { name: 'AQI API', endpoint: 'http://localhost:5000/api/aqi/bounds?lat1=28.4&lng1=76.8&lat2=28.9&lng2=77.4', status: 'checking', icon: Server, category: 'core' },
-        { name: 'Sources API', endpoint: 'http://localhost:5000/api/sources?lat1=28.4&lng1=76.8&lat2=28.9&lng2=77.4', status: 'checking', icon: Database, category: 'core' },
+        { name: 'AQI API', endpoint: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/aqi/bounds?lat1=28.4&lng1=76.8&lat2=28.9&lng2=77.4`, status: 'checking', icon: Server, category: 'core' },
+        { name: 'Sources API', endpoint: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/sources?lat1=28.4&lng1=76.8&lat2=28.9&lng2=77.4`, status: 'checking', icon: Database, category: 'core' },
         { name: 'Weather API', endpoint: 'https://api.openweathermap.org/data/2.5/weather?lat=28.61&lon=77.20&appid=demo', status: 'checking', icon: Cloud, category: 'core' },
         { name: 'NASA MODIS Data Feed', endpoint: '', status: 'online', icon: Cloud, category: 'core', mockOnline: true },
         { name: 'Sentinel-5P Integration', endpoint: '', status: 'online', icon: Cloud, category: 'core', mockOnline: true },
@@ -53,7 +53,7 @@ export function Header() {
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 3000);
-                const response = await fetch('http://localhost:5000/api/aqi/bounds?lat1=28.4&lng1=76.8&lat2=28.9&lng2=77.4', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/aqi/bounds?lat1=28.4&lng1=76.8&lat2=28.9&lng2=77.4`, {
                     signal: controller.signal,
                     method: 'GET'
                 });
