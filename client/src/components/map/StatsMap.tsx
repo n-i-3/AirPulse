@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, Tooltip, useMap } from 'react-leaflet';
+import { useTheme } from 'next-themes';
 import 'leaflet/dist/leaflet.css';
 
 interface StationMarker {
@@ -26,7 +27,7 @@ function useDebounce<T extends (...args: any[]) => void>(
     callback: T,
     delay: number
 ): (...args: Parameters<T>) => void {
-    const timeoutRef = useRef<NodeJS.Timeout>();
+    const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
     return useCallback((...args: Parameters<T>) => {
         if (timeoutRef.current) {
@@ -58,11 +59,18 @@ function MapController({ onBoundsChange }: { onBoundsChange: (bounds: any) => vo
     return null;
 }
 
-export default function StatsMap() {
+interface StatsMapProps {
+    onLocationSelect?: (location: string) => void;
+}
+
+export default function StatsMap({ onLocationSelect }: StatsMapProps) {
+    const { theme } = useTheme();
     const [markers, setMarkers] = useState<StationMarker[]>([]);
     const [loading, setLoading] = useState(false);
     const cacheRef = useRef<Map<string, CacheEntry>>(new Map());
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+    const isLight = theme === 'light';
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -140,15 +148,15 @@ export default function StatsMap() {
     };
 
     return (
-        <div className="h-full w-full overflow-hidden relative z-0 bg-zinc-950">
+        <div className="h-full w-full overflow-hidden relative z-0 bg-background transition-colors duration-500">
             {loading && (
-                <div className="absolute top-4 right-4 z-[500] bg-black/80 backdrop-blur px-3 py-1 rounded-full border border-white/10 text-xs font-mono text-primary flex items-center gap-2">
+                <div className="absolute top-4 right-4 z-[500] bg-background/80 backdrop-blur px-3 py-1 rounded-full border border-border text-xs font-mono text-primary flex items-center gap-2 shadow-lg">
                     <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
                     UPDATING GRID...
                 </div>
             )}
 
-            <div className="absolute top-4 left-4 z-[500] bg-black/80 backdrop-blur px-3 py-1 rounded-lg border border-white/10 text-xs font-mono text-white/70">
+            <div className="absolute top-4 left-4 z-[500] bg-background/80 backdrop-blur px-3 py-1 rounded-lg border border-border text-xs font-mono text-foreground/70 shadow-lg">
                 <div className="flex items-center gap-2">
                     <div className="h-2 w-2 bg-green-500 rounded-full" />
                     <span>{markers.length} STATIONS ACTIVE</span>
@@ -159,13 +167,21 @@ export default function StatsMap() {
                 center={[28.61, 77.20]}
                 zoom={11}
                 scrollWheelZoom={true}
-                style={{ height: '100%', width: '100%', background: '#09090b' }}
+                style={{ height: '100%', width: '100%', background: 'transparent' }}
                 zoomControl={false}
             >
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                />
+                {/* Dynamically switch tile layer based on theme */}
+                {isLight ? (
+                    <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+                        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                    />
+                ) : (
+                    <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+                        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                    />
+                )}
 
                 <MapController onBoundsChange={fetchStations} />
 
@@ -177,35 +193,48 @@ export default function StatsMap() {
                         pathOptions={{
                             fillColor: getColor(marker.aqi),
                             fillOpacity: 0.9,
-                            color: 'rgba(255,255,255,0.2)',
+                            color: isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
                             weight: 1,
                             opacity: 1
                         }}
                         eventHandlers={{
                             mouseover: (e) => {
-                                e.target.setStyle({ weight: 3, color: '#fff', radius: 18 });
+                                e.target.setStyle({
+                                    weight: 3,
+                                    color: isLight ? '#000' : '#fff',
+                                    radius: 18
+                                });
                                 e.target.bringToFront();
                             },
                             mouseout: (e) => {
-                                e.target.setStyle({ weight: 1, color: 'rgba(255,255,255,0.2)', radius: 16 });
+                                e.target.setStyle({
+                                    weight: 1,
+                                    color: isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
+                                    radius: 16
+                                });
+                            },
+                            click: () => {
+                                if (onLocationSelect) {
+                                    onLocationSelect(marker.station.name || 'Unknown Location');
+                                }
                             }
                         }}
                     >
                         <Tooltip
                             permanent
                             direction="center"
-                            className="bg-transparent border-0 shadow-none text-white font-bold font-mono text-[10px]"
+                            className="bg-transparent border-0 shadow-none font-bold font-mono text-[10px]"
                         >
                             {marker.aqi}
                         </Tooltip>
 
                         <Popup className="glass-popup" closeButton={false}>
                             <div className="min-w-[200px] p-1">
-                                <div className="flex justify-between items-start mb-2 pb-2 border-b border-white/10">
-                                    <h3 className="font-bold text-sm text-white m-0 truncate pr-2" style={{ maxWidth: '180px' }}>
+                                <div className="flex justify-between items-start mb-2 pb-2 border-b border-border/10">
+                                    <h3 className="font-bold text-sm text-foreground m-0 truncate pr-2" style={{ maxWidth: '180px' }}>
                                         {marker.station.name}
                                     </h3>
-                                    <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-white/60 font-mono">LIVE</span>
+                                    <span className="text-[10px] bg-primary/10 px-1.5 py-0.5 rounded text-primary font-mono">LIVE</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div
@@ -215,10 +244,10 @@ export default function StatsMap() {
                                         {marker.aqi}
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-xs font-medium text-white/90">
+                                        <span className="text-xs font-medium text-foreground/90">
                                             Station ID: {marker.uid}
                                         </span>
-                                        <span className="text-[10px] text-white/50">
+                                        <span className="text-[10px] text-muted-foreground">
                                             Last Updated: {marker.station.time.split('T')[1]?.split('+')[0] || 'Recently'}
                                         </span>
                                     </div>
@@ -234,21 +263,22 @@ export default function StatsMap() {
                     background: transparent !important;
                     border: none !important;
                     box-shadow: none !important;
-                    color: white !important;
+                    color: ${isLight ? '#000' : 'white'} !important;
                     font-family: var(--font-mono) !important;
                     font-weight: 700 !important;
-                    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+                    text-shadow: ${isLight ? 'none' : '0 1px 2px rgba(0,0,0,0.8)'};
                 }
                 .leaflet-popup-content-wrapper {
-                    background: rgba(20, 20, 25, 0.85) !important;
+                    background: ${isLight ? 'rgba(255, 255, 255, 0.85)' : 'rgba(20, 20, 25, 0.85)'} !important;
                     backdrop-filter: blur(12px) !important;
-                    border: 1px solid rgba(255,255,255,0.1) !important;
+                    border: 1px solid var(--border) !important;
                     border-radius: 12px !important;
-                    color: white !important;
+                    color: var(--foreground) !important;
                     padding: 0 !important;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
                 }
                 .leaflet-popup-tip {
-                    background: rgba(20, 20, 25, 0.85) !important;
+                    background: ${isLight ? 'rgba(255, 255, 255, 0.85)' : 'rgba(20, 20, 25, 0.85)'} !important;
                 }
             `}</style>
         </div>

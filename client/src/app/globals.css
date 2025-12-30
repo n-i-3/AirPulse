@@ -44,76 +44,122 @@
 }
 
 :root {
-  --radius: 0.5rem;
-  /* Modern rounded corners */
+  --radius: 0.75rem;
 
-  /* Modern Dark Palette - Deep Blue/Black base */
-  --background: oklch(0.10 0.02 240);
-  --foreground: oklch(0.985 0 0);
+  /* Premium Light Theme - "Luminous Gradient" (Refined for High Contrast) */
+  /* Purpose: Lucrative, readable, premium */
 
-  /* Glass Cards */
-  --card: oklch(0.10 0.02 240 / 50%);
-  --card-foreground: oklch(0.985 0 0);
+  --background: oklch(0.99 0.002 280);
+  /* Pure white with hints */
+  --foreground: oklch(0.12 0.02 260);
+  /* Much darker grey/black for readability */
 
-  --popover: oklch(0.12 0.02 240);
-  --popover-foreground: oklch(0.985 0 0);
+  /* Glass Cards: crisper, more opaque for text legibility */
+  --card: oklch(1 0 0 / 80%);
+  --card-foreground: oklch(0.12 0.02 260);
 
-  /* Electric Amber - Modernized Bloomberg */
-  --primary: oklch(0.75 0.18 55);
-  --primary-foreground: oklch(0.1 0 0);
+  --popover: oklch(1 0 0 / 95%);
+  --popover-foreground: oklch(0.12 0.02 260);
 
-  --secondary: oklch(0.25 0.04 240);
-  --secondary-foreground: oklch(0.985 0 0);
+  /* Vibrant Primary - Deep Electric Purple */
+  --primary: oklch(0.45 0.28 270);
+  --primary-foreground: oklch(1 0 0);
 
-  --muted: oklch(0.20 0.03 240);
-  --muted-foreground: oklch(0.70 0.02 240);
+  --secondary: oklch(0.96 0.01 280);
+  --secondary-foreground: oklch(0.20 0.05 260);
 
-  --accent: oklch(0.25 0.04 240);
-  --accent-foreground: oklch(0.985 0 0);
+  /* Muted areas - Darker for visibility */
+  --muted: oklch(0.96 0.008 280);
+  --muted-foreground: oklch(0.35 0.04 260);
+  /* significantly darker for readable gray text */
 
-  --destructive: oklch(0.6 0.2 20);
+  --accent: oklch(0.94 0.015 320);
+  --accent-foreground: oklch(0.30 0.10 280);
 
-  /* Subtle glass borders */
-  --border: oklch(0.985 0 0 / 10%);
-  --input: oklch(0.985 0 0 / 10%);
-  --ring: oklch(0.75 0.18 55 / 50%);
+  --destructive: oklch(0.58 0.18 15);
 
-  --chart-1: oklch(0.75 0.18 55);
-  --chart-2: oklch(0.6 0.15 200);
-  --chart-3: oklch(0.5 0.15 260);
-  --chart-4: oklch(0.8 0.15 90);
-  --chart-5: oklch(0.7 0.15 30);
+  /* Borders: Visible but elegant */
+  --border: oklch(0.12 0.02 260 / 12%);
+  /* Increased visibility */
+  --input: oklch(0.12 0.02 260 / 12%);
 
-  --sidebar: oklch(0.08 0.02 240);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.75 0.18 55);
-  --sidebar-primary-foreground: oklch(0.1 0 0);
-  --sidebar-accent: oklch(0.15 0.03 240);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.985 0 0 / 10%);
-  --sidebar-ring: oklch(0.75 0.18 55);
+  --ring: oklch(0.45 0.28 270 / 40%);
+
+  /* Data Viz */
+  --chart-1: oklch(0.45 0.28 270);
+  --chart-2: oklch(0.55 0.22 210);
+  --chart-3: oklch(0.62 0.20 30);
+  --chart-4: oklch(0.68 0.18 70);
+  --chart-5: oklch(0.48 0.22 310);
+
+  --sidebar: oklch(0.995 0 0);
+  --sidebar-foreground: oklch(0.12 0.02 260);
+  --sidebar-primary: oklch(0.45 0.28 270);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.96 0.01 280);
+  --sidebar-accent-foreground: oklch(0.20 0.05 260);
+  --sidebar-border: oklch(0.12 0.02 260 / 10%);
+  --sidebar-ring: oklch(0.45 0.28 270 / 40%);
 }
 
 .dark {
-  /* Inherits root because we forced dark mode look */
-  --background: oklch(0.10 0.02 240);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.12 0.02 240 / 40%);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.12 0.02 240);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.75 0.18 55);
-  --primary-foreground: oklch(0.1 0 0);
-  --secondary: oklch(0.25 0.04 240);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.20 0.03 240);
-  --muted-foreground: oklch(0.70 0.02 240);
-  --accent: oklch(0.25 0.04 240);
-  --accent-foreground: oklch(0.985 0 0);
+  /* Bloomberg Theme - "Warm Amber Terminal" */
+  /* Deep warm black background + Amber/Gold accents */
+
+  --background: oklch(0.12 0.01 40);
+  /* Deep warm charcoal/black */
+  --foreground: oklch(0.95 0.02 50);
+  /* Warm off-white */
+
+  /* Glass Cards */
+  --card: oklch(0.14 0.01 40 / 70%);
+  /* Slightly lighter warm black */
+  --card-foreground: oklch(0.95 0.02 50);
+
+  --popover: oklch(0.14 0.01 40);
+  --popover-foreground: oklch(0.95 0.02 50);
+
+  /* Bloomberg Amber - The signature color */
+  --primary: oklch(0.75 0.18 65);
+  /* Vibrant Amber/Gold */
+  --primary-foreground: oklch(0.12 0.01 40);
+
+  --secondary: oklch(0.18 0.02 40);
+  --secondary-foreground: oklch(0.95 0.02 50);
+
+  --muted: oklch(0.18 0.01 40);
+  --muted-foreground: oklch(0.65 0.02 50);
+
+  --accent: oklch(0.18 0.02 40);
+  --accent-foreground: oklch(0.75 0.18 65);
+
   --destructive: oklch(0.6 0.2 20);
-  --border: oklch(0.985 0 0 / 10%);
-  --input: oklch(0.985 0 0 / 10%);
-  --ring: oklch(0.75 0.18 55 / 50%);
+
+  /* Amber-tinted borders */
+  --border: oklch(0.75 0.18 65 / 15%);
+  --input: oklch(0.75 0.18 65 / 15%);
+  --ring: oklch(0.75 0.18 65 / 40%);
+
+  /* Data Viz - Warm spectrum */
+  --chart-1: oklch(0.75 0.18 65);
+  /* Amber */
+  --chart-2: oklch(0.70 0.15 40);
+  /* Orange */
+  --chart-3: oklch(0.65 0.12 25);
+  /* Red-Orange */
+  --chart-4: oklch(0.80 0.12 85);
+  /* Yellow */
+  --chart-5: oklch(0.60 0.10 300);
+  /* Muted Purple (for contrast) */
+
+  --sidebar: oklch(0.10 0.01 40);
+  --sidebar-foreground: oklch(0.95 0.02 50);
+  --sidebar-primary: oklch(0.75 0.18 65);
+  --sidebar-primary-foreground: oklch(0.12 0.01 40);
+  --sidebar-accent: oklch(0.15 0.02 40);
+  --sidebar-accent-foreground: oklch(0.95 0.02 50);
+  --sidebar-border: oklch(0.75 0.18 65 / 15%);
+  --sidebar-ring: oklch(0.75 0.18 65);
 }
 
 @layer base {
@@ -123,5 +169,49 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Premium Glass Card Effects */
+  .glass-card {
+    backdrop-filter: blur(16px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Light mode gets soft shadows */
+  :root .glass-card {
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.05),
+      0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  }
+
+  /* Dark mode: Strong Amber Glow (Bloomberg Style) */
+  .dark .glass-card {
+    box-shadow:
+      0 0 0 1px rgba(255, 175, 40, 0.05),
+      /* Subtle amber ring */
+      0 4px 20px rgba(0, 0, 0, 0.5);
+    /* Deep shadow */
+  }
+
+  /* Hover Effects for "Lucrative" Feel */
+  .glass-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+  }
+
+  :root .glass-card:hover {
+    box-shadow:
+      0 20px 25px -5px rgba(0, 0, 0, 0.05),
+      0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  }
+
+  /* Amber/Gold Glow on Hover */
+  .dark .glass-card:hover {
+    box-shadow:
+      0 0 0 1px var(--primary),
+      0 0 20px -5px var(--primary);
+    /* Neon Amber Glow */
   }
 }

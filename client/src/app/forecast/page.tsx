@@ -124,7 +124,7 @@ export default function AnalyticsPage() {
                         <Activity className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-bold text-white tracking-tight">Real-Time Analytics</h1>
+                        <h1 className="text-3xl font-bold text-foreground tracking-tight">Real-Time Analytics</h1>
                         <p className="text-muted-foreground text-sm">Live AQI Analysis & Risk Assessment</p>
                     </div>
                     <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20">
@@ -137,19 +137,19 @@ export default function AnalyticsPage() {
                     <div className="flex items-center justify-center h-64">
                         <div className="flex flex-col items-center gap-3">
                             <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                            <div className="text-sm font-mono text-white/50">Analyzing {stationCount || 'Delhi NCR'} stations...</div>
+                            <div className="text-sm font-mono text-muted-foreground">Analyzing {stationCount || 'Delhi NCR'} stations...</div>
                         </div>
                     </div>
                 ) : analytics && (
                     <>
                         {/* Key Metrics */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                            <div className="rounded-2xl border border-white/5 bg-card backdrop-blur-xl p-5">
+                            <div className="rounded-2xl glass-card p-5">
                                 <div className="flex items-center gap-2 text-muted-foreground mb-2">
                                     <TrendingUp className="h-4 w-4 text-primary" />
                                     <span className="text-xs font-medium uppercase">Average AQI</span>
                                 </div>
-                                <div className="text-4xl font-bold text-white">{analytics.avgAqi}</div>
+                                <div className="text-4xl font-bold text-foreground">{analytics.avgAqi}</div>
                                 <div className="text-xs text-muted-foreground mt-1">Across {stationCount} stations</div>
                             </div>
 
@@ -158,8 +158,8 @@ export default function AnalyticsPage() {
                                     <AlertTriangle className="h-4 w-4 text-red-500" />
                                     <span className="text-xs font-medium uppercase">Peak AQI</span>
                                 </div>
-                                <div className="text-4xl font-bold text-red-400">{analytics.maxAqi}</div>
-                                <div className="text-xs text-red-300 mt-1">Highest reading</div>
+                                <div className="text-4xl font-bold text-red-600 dark:text-red-400">{analytics.maxAqi}</div>
+                                <div className="text-xs text-red-500/80 dark:text-red-300 mt-1">Highest reading</div>
                             </div>
 
                             <div className="rounded-2xl border border-green-500/20 bg-green-500/5 backdrop-blur-xl p-5">
@@ -167,8 +167,8 @@ export default function AnalyticsPage() {
                                     <Target className="h-4 w-4 text-green-500" />
                                     <span className="text-xs font-medium uppercase">Min AQI</span>
                                 </div>
-                                <div className="text-4xl font-bold text-green-400">{analytics.minAqi}</div>
-                                <div className="text-xs text-green-300 mt-1">Best air quality</div>
+                                <div className="text-4xl font-bold text-green-600 dark:text-green-400">{analytics.minAqi}</div>
+                                <div className="text-xs text-green-500/80 dark:text-green-300 mt-1">Best air quality</div>
                             </div>
 
                             <div className="rounded-2xl border border-orange-500/20 bg-orange-500/5 backdrop-blur-xl p-5">
@@ -176,21 +176,21 @@ export default function AnalyticsPage() {
                                     <MapPin className="h-4 w-4 text-orange-500" />
                                     <span className="text-xs font-medium uppercase">Critical Zones</span>
                                 </div>
-                                <div className="text-4xl font-bold text-orange-400">{analytics.criticalZones.length}</div>
-                                <div className="text-xs text-orange-300 mt-1">AQI &gt; 200</div>
+                                <div className="text-4xl font-bold text-orange-600 dark:text-orange-400">{analytics.criticalZones.length}</div>
+                                <div className="text-xs text-orange-500/80 dark:text-orange-300 mt-1">AQI &gt; 200</div>
                             </div>
                         </div>
 
                         {/* AQI Distribution */}
-                        <div className="rounded-3xl border border-white/5 bg-card/50 backdrop-blur-xl p-8 mb-8">
-                            <h2 className="text-xl font-bold text-white mb-6">AQI Distribution</h2>
+                        <div className="rounded-3xl glass-card p-8 mb-8">
+                            <h2 className="text-xl font-bold text-foreground mb-6">AQI Distribution</h2>
                             <div className="space-y-3">
                                 {analytics.distribution.map((item, idx) => (
                                     <div key={idx} className="flex items-center gap-4">
-                                        <div className="w-32 text-sm text-white/80 font-mono">{item.range}</div>
-                                        <div className="flex-1 h-8 bg-white/5 rounded-full overflow-hidden">
+                                        <div className="w-32 text-sm text-foreground/80 font-mono">{item.range}</div>
+                                        <div className="flex-1 h-8 bg-muted/20 rounded-full border border-border">
                                             <div
-                                                className="h-full flex items-center px-3 text-xs font-bold text-white transition-all duration-500"
+                                                className="h-full flex items-center px-3 text-xs font-bold text-white transition-all duration-500 shadow-sm rounded-full"
                                                 style={{
                                                     width: `${(item.count / stationCount) * 100}%`,
                                                     backgroundColor: item.color,
@@ -200,7 +200,7 @@ export default function AnalyticsPage() {
                                                 {item.count > 0 && item.count}
                                             </div>
                                         </div>
-                                        <div className="w-16 text-sm text-white/60 text-right">
+                                        <div className="w-16 text-sm text-muted-foreground text-right">
                                             {Math.round((item.count / stationCount) * 100)}%
                                         </div>
                                     </div>
@@ -211,22 +211,22 @@ export default function AnalyticsPage() {
                         {/* Critical Zones */}
                         {analytics.criticalZones.length > 0 && (
                             <div className="rounded-3xl border border-red-500/20 bg-red-500/5 backdrop-blur-xl p-8 mb-8">
-                                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                                <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
                                     <AlertTriangle className="h-5 w-5 text-red-500" />
                                     Critical Pollution Zones
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {analytics.criticalZones.map((zone, idx) => (
-                                        <div key={zone.uid} className="rounded-2xl border border-white/5 bg-black/20 p-4">
+                                        <div key={zone.uid} className="rounded-2xl border border-border bg-background/50 p-4">
                                             <div className="flex items-start justify-between mb-2">
-                                                <div className="text-sm font-medium text-white truncate pr-2" style={{ maxWidth: '200px' }}>
+                                                <div className="text-sm font-medium text-foreground truncate pr-2" style={{ maxWidth: '200px' }}>
                                                     {zone.station.name}
                                                 </div>
-                                                <span className="text-2xl font-bold font-mono text-red-400">
+                                                <span className="text-2xl font-bold font-mono text-red-600 dark:text-red-400">
                                                     {zone.aqi}
                                                 </span>
                                             </div>
-                                            <div className="text-xs text-white/50">
+                                            <div className="text-xs text-muted-foreground">
                                                 {zone.lat.toFixed(3)}, {zone.lon.toFixed(3)}
                                             </div>
                                         </div>
@@ -237,19 +237,19 @@ export default function AnalyticsPage() {
 
                         {/* Recommendation */}
                         <div className={`rounded-3xl border p-8 ${analytics.priority === 'P0' ? 'border-red-500/30 bg-red-500/10' :
-                                analytics.priority === 'P1' ? 'border-orange-500/30 bg-orange-500/10' :
-                                    'border-primary/20 bg-primary/5'
+                            analytics.priority === 'P1' ? 'border-orange-500/30 bg-orange-500/10' :
+                                'border-primary/20 bg-primary/5'
                             }`}>
                             <div className="flex items-center gap-3 mb-4">
                                 <div className={`px-3 py-1 rounded-full text-xs font-bold font-mono ${analytics.priority === 'P0' ? 'bg-red-500 text-white' :
-                                        analytics.priority === 'P1' ? 'bg-orange-500 text-white' :
-                                            'bg-primary text-white'
+                                    analytics.priority === 'P1' ? 'bg-orange-500 text-white' :
+                                        'bg-primary text-primary-foreground'
                                     }`}>
                                     {analytics.priority} PRIORITY
                                 </div>
-                                <h2 className="text-xl font-bold text-white">Recommended Action</h2>
+                                <h2 className="text-xl font-bold text-foreground">Recommended Action</h2>
                             </div>
-                            <p className="text-white/90 leading-relaxed">
+                            <p className="text-foreground/90 leading-relaxed">
                                 {analytics.recommendation}
                             </p>
                         </div>

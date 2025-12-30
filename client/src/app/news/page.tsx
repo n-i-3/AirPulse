@@ -186,7 +186,7 @@ export default function IntelPage() {
                         <Newspaper className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-bold text-white tracking-tight">Intelligence Feed</h1>
+                        <h1 className="text-3xl font-bold text-foreground tracking-tight">Intelligence Feed</h1>
                         <p className="text-muted-foreground text-sm">Real-time pollution intelligence and threat analysis</p>
                     </div>
                     <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20">
@@ -197,7 +197,7 @@ export default function IntelPage() {
 
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
-                        <div className="text-primary font-mono animate-pulse">Aggregating intelligence sources...</div>
+                        <div className="text-muted-foreground font-mono animate-pulse">Aggregating intelligence sources...</div>
                     </div>
                 ) : (
                     <div className="space-y-4">
@@ -207,7 +207,7 @@ export default function IntelPage() {
                                 <div
                                     key={index}
                                     className={cn(
-                                        "group relative rounded-2xl border backdrop-blur-xl p-6 transition-all duration-300 hover:shadow-2xl",
+                                        "group relative rounded-2xl border backdrop-blur-xl p-6 transition-all duration-300 hover:shadow-2xl glass-card",
                                         getSeverityStyle(item.severity)
                                     )}
                                 >
@@ -239,23 +239,23 @@ export default function IntelPage() {
                                                         {item.timestamp}
                                                     </span>
                                                 </div>
-                                                <h3 className="text-lg font-bold text-white">
+                                                <h3 className="text-lg font-bold text-foreground">
                                                     {item.title}
                                                 </h3>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <p className="text-sm text-zinc-300 leading-relaxed">
+                                    <p className="text-sm text-foreground/80 leading-relaxed">
                                         {item.description}
                                     </p>
 
                                     {item.data && Array.isArray(item.data) && item.data.length > 0 && (
-                                        <div className="mt-4 pt-4 border-t border-white/10">
+                                        <div className="mt-4 pt-4 border-t border-border">
                                             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                                 {item.data.slice(0, 6).map((station: StationData, idx: number) => (
-                                                    <div key={idx} className="text-xs font-mono bg-black/20 rounded px-2 py-1 flex justify-between">
-                                                        <span className="text-white/70 truncate pr-2">{station.station.name}</span>
+                                                    <div key={idx} className="text-xs font-mono bg-background/50 rounded px-2 py-1 flex justify-between border border-border/50">
+                                                        <span className="text-muted-foreground truncate pr-2">{station.station.name}</span>
                                                         <span className="text-primary font-bold">{station.aqi}</span>
                                                     </div>
                                                 ))}
