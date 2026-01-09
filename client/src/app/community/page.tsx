@@ -272,16 +272,16 @@ export default function CommunityPage() {
                                     key={report._id}
                                     layout
                                     className={cn(
-                                        "relative overflow-hidden",
+                                        "relative overflow-hidden cursor-pointer",
                                         isExpanded && "lg:col-span-2 xl:col-span-3"
                                     )}
+                                    onClick={() => toggleReport(report._id)}
                                 >
                                     <BentoCard
                                         className={cn(
-                                            "p-6 cursor-pointer transition-all hover:scale-[1.02]",
+                                            "p-6 transition-all hover:scale-[1.02]",
                                             categoryColors[report.metadata?.category] || 'border-cyan-500/20'
                                         )}
-                                        onClick={() => toggleReport(report._id)}
                                     >
                                         {/* Card Header */}
                                         <div className="flex items-start justify-between mb-4">
