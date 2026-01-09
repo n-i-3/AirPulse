@@ -124,6 +124,7 @@ export function Header() {
     const routes = [
         { href: '/', label: 'Overview', icon: Activity },
         { href: '/report', label: 'Report', icon: ShieldAlert },
+        { href: '/community', label: 'Community', icon: Radio },
         { href: '/news', label: 'Intel', icon: Newspaper },
         { href: '/forecast', label: 'AI Forecast', icon: Brain },
         { href: '/sources', label: 'Sources', icon: Flame },

@@ -44,5 +44,6 @@ app.get('/api/auth/me', authController.me);
 app.use('/api/aqi', require('./routes/aqiRoutes'));
 app.use('/api/sources', require('./routes/sourceRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
 module.exports = app;

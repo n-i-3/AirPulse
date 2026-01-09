@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Header } from "@/components/layout/Header";
-import { Newspaper, AlertTriangle, TrendingUp, MapPin, Activity, Clock } from "lucide-react";
+import { AlertTriangle, TrendingUp, Activity, ChevronDown, ChevronUp, Zap, MapPin, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BentoCard } from '@/components/dashboard/BentoCard';
+import { motion, AnimatePresence } from "framer-motion";
 
 interface StationData {
     uid: number;
@@ -23,12 +25,41 @@ interface IntelItem {
     severity: 'critical' | 'high' | 'medium' | 'low';
     timestamp: string;
     data?: any;
+    details?: string[];
 }
+
+const severityConfig = {
+    critical: {
+        color: 'border-red-500/40 bg-red-950/20',
+        textColor: 'text-red-400',
+        icon: AlertTriangle,
+        badge: 'bg-red-500/20 text-red-400 border-red-500/30'
+    },
+    high: {
+        color: 'border-orange-500/40 bg-orange-950/20',
+        textColor: 'text-orange-400',
+        icon: Zap,
+        badge: 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+    },
+    medium: {
+        color: 'border-yellow-500/40 bg-yellow-950/20',
+        textColor: 'text-yellow-400',
+        icon: Activity,
+        badge: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+    },
+    low: {
+        color: 'border-cyan-500/40 bg-cyan-950/20',
+        textColor: 'text-cyan-400',
+        icon: TrendingUp,
+        badge: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
+    }
+};
 
 export default function IntelPage() {
     const [intelFeed, setIntelFeed] = useState<IntelItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [lastUpdate, setLastUpdate] = useState<string>('');
+    const [expandedId, setExpandedId] = useState<number | null>(null);
 
     useEffect(() => {
         fetchIntelligence();
@@ -70,10 +101,11 @@ export default function IntelPage() {
             intel.push({
                 type: 'ALERT',
                 title: `${criticalStations.length} Critical Pollution Zones Detected`,
-                description: `Immediate action required. Stations: ${criticalStations.slice(0, 3).map(s => s.station.name).join(', ')}${criticalStations.length > 3 ? ` and ${criticalStations.length - 3} more` : ''}.`,
+                description: `Immediate action required in high-risk areas. AQI exceeds safe thresholds.`,
                 severity: 'critical',
                 timestamp: 'Now',
-                data: criticalStations
+                data: criticalStations,
+                details: criticalStations.map(s => `${s.station.name}: AQI ${s.aqi}`)
             });
         }
 
@@ -82,9 +114,15 @@ export default function IntelPage() {
             intel.push({
                 type: 'ADVISORY',
                 title: 'Delhi NCR Air Quality Deteriorating',
-                description: `Average AQI across ${stations.length} monitoring stations is ${Math.round(avgAqi)}. Recommend limiting outdoor activities and using N95 masks.`,
+                description: `Average AQI: ${Math.round(avgAqi)} across ${stations.length} stations.`,
                 severity: avgAqi > 200 ? 'critical' : 'high',
-                timestamp: '2m ago'
+                timestamp: '2m ago',
+                details: [
+                    'Avoid prolonged outdoor activities',
+                    'Use N95 or equivalent masks',
+                    'Keep windows closed',
+                    'Run air purifiers at maximum'
+                ]
             });
         }
 
@@ -98,176 +136,254 @@ export default function IntelPage() {
             { name: 'North Delhi', stations: northStations },
             { name: 'South Delhi', stations: southStations },
             { name: 'East Delhi', stations: eastStations },
-            { name: 'West Delhi', stations: westStations }
+            { name: 'West Delhi', stations: westStations },
         ];
 
         zones.forEach(zone => {
             if (zone.stations.length > 0) {
-                const zoneAvg = zone.stations.reduce((sum, s) => sum + parseInt(s.aqi), 0) / zone.stations.length;
-                if (zoneAvg > 180) {
+                const zoneAqis = zone.stations.map(s => parseInt(s.aqi)).filter(v => !isNaN(v));
+                const zoneAvg = zoneAqis.reduce((a, b) => a + b, 0) / zoneAqis.length;
+
+                if (zoneAvg > 150) {
                     intel.push({
                         type: 'CLUSTER',
-                        title: `${zone.name} Shows Elevated Pollution Levels`,
-                        description: `Regional average AQI: ${Math.round(zoneAvg)}. ${zone.stations.length} active monitoring stations in this zone.`,
+                        title: `${zone.name} Pollution Cluster`,
+                        description: `Average AQI: ${Math.round(zoneAvg)} | ${zone.stations.length} affected stations`,
                         severity: zoneAvg > 200 ? 'high' : 'medium',
-                        timestamp: '5m ago'
+                        timestamp: '5m ago',
+                        details: zone.stations.slice(0, 5).map(s => `${s.station.name}: ${s.aqi}`)
                     });
                 }
             }
         });
 
-        // AQI variance analysis
-        const maxAqi = Math.max(...aqiValues);
-        const minAqi = Math.min(...aqiValues);
-        if ((maxAqi - minAqi) > 150) {
+        // Trend analysis
+        if (avgAqi > 100) {
             intel.push({
                 type: 'TREND',
-                title: 'High Spatial Variance Detected',
-                description: `AQI ranges from ${minAqi} to ${maxAqi} across Delhi NCR. Significant localized pollution sources identified.`,
+                title: 'Elevated Pollution Levels Persist',
+                description: `Delhi NCR experiencing sustained poor air quality.`,
                 severity: 'medium',
-                timestamp: '8m ago'
+                timestamp: '15m ago',
+                details: [
+                    `Current average: ${Math.round(avgAqi)} AQI`,
+                    `${stations.length} active monitoring stations`,
+                    'Weather conditions unfavorable for dispersion'
+                ]
             });
         }
-
-        // Worst stations highlight
-        const worst = stations.sort((a, b) => parseInt(b.aqi) - parseInt(a.aqi)).slice(0, 5);
-        intel.push({
-            type: 'TREND',
-            title: 'Top 5 Polluted Areas',
-            description: worst.map(s => `${s.station.name} (${s.aqi})`).join(', '),
-            severity: 'medium',
-            timestamp: '12m ago',
-            data: worst
-        });
 
         return intel;
     };
 
-    const getSeverityStyle = (severity: string) => {
-        switch (severity) {
-            case 'critical':
-                return 'border-red-500/30 bg-red-500/10';
-            case 'high':
-                return 'border-orange-500/30 bg-orange-500/10';
-            case 'medium':
-                return 'border-yellow-500/30 bg-yellow-500/10';
-            default:
-                return 'border-blue-500/30 bg-blue-500/10';
-        }
-    };
-
-    const getSeverityBadge = (severity: string) => {
-        const styles = {
-            critical: 'bg-red-500 text-white',
-            high: 'bg-orange-500 text-white',
-            medium: 'bg-yellow-500 text-black',
-            low: 'bg-blue-500 text-white'
-        };
-        return styles[severity as keyof typeof styles];
-    };
-
-    const getIcon = (type: string) => {
-        switch (type) {
-            case 'ALERT': return AlertTriangle;
-            case 'TREND': return TrendingUp;
-            case 'CLUSTER': return MapPin;
-            case 'ADVISORY': return Activity;
-            default: return Newspaper;
-        }
-    };
-
     return (
-        <main className="min-h-screen bg-transparent text-foreground font-sans selection:bg-primary/20 selection:text-primary">
+        <main className="min-h-screen bg-[#020617] text-white font-sans selection:bg-primary/30 relative overflow-x-hidden">
             <Header />
-            <div className="mx-auto max-w-screen-xl px-4 py-8">
 
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
-                        <Newspaper className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                        <h1 className="text-3xl font-bold text-foreground tracking-tight">Intelligence Feed</h1>
-                        <p className="text-muted-foreground text-sm">Real-time pollution intelligence and threat analysis</p>
-                    </div>
-                    <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20">
-                        <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                        <span className="text-xs font-mono text-green-500">LIVE {lastUpdate && `• ${lastUpdate}`}</span>
+            <div className="mx-auto max-w-[1600px] px-6 py-8">
+
+                {/* Header */}
+                <div className="mb-8">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-4xl font-bold tracking-tight mb-2 flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                                    <Zap className="h-8 w-8 text-cyan-400" />
+                                </div>
+                                Intelligence Feed
+                            </h1>
+                            <p className="text-zinc-400">Real-time alerts and insights from satellite + ground sensors</p>
+                        </div>
+                        {lastUpdate && (
+                            <div className="text-sm text-zinc-500 flex items-center gap-2">
+                                <Clock className="h-4 w-4" />
+                                Last updated: {lastUpdate}
+                            </div>
+                        )}
                     </div>
                 </div>
 
+                {/* Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <BentoCard className="p-4 border-red-500/30 hover:border-red-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/10 relative group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
+                        <div className="text-xs text-zinc-500 uppercase tracking-widest mb-2 relative z-10">Active Alerts</div>
+                        <div className="text-3xl font-bold text-red-500 font-mono relative z-10">
+                            {intelFeed.filter(i => i.severity === 'critical' || i.severity === 'high').length}
+                        </div>
+                    </BentoCard>
+
+                    <BentoCard className="p-4 border-cyan-500/30 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10 relative group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
+                        <div className="text-xs text-zinc-500 uppercase tracking-widest mb-2 relative z-10">Total Insights</div>
+                        <div className="text-3xl font-bold text-white font-mono relative z-10">{intelFeed.length}</div>
+                    </BentoCard>
+
+                    <BentoCard className="p-4 border-emerald-500/30 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 relative group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
+                        <div className="text-xs text-zinc-500 uppercase tracking-widest mb-2 relative z-10">System Status</div>
+                        <div className="flex items-center gap-2 relative z-10">
+                            <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
+                            <span className="text-sm text-emerald-500 font-mono">OPERATIONAL</span>
+                        </div>
+                    </BentoCard>
+                </div>
+
+                {/* Intel Feed */}
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
-                        <div className="text-muted-foreground font-mono animate-pulse">Aggregating intelligence sources...</div>
+                        <div className="text-zinc-500 font-mono animate-pulse">Analyzing data streams...</div>
                     </div>
                 ) : (
                     <div className="space-y-4">
                         {intelFeed.map((item, index) => {
-                            const Icon = getIcon(item.type);
+                            const config = severityConfig[item.severity];
+                            const Icon = config.icon;
+                            const isExpanded = expandedId === index;
+
                             return (
-                                <div
+                                <motion.div
                                     key={index}
-                                    className={cn(
-                                        "group relative rounded-2xl border backdrop-blur-xl p-6 transition-all duration-300 hover:shadow-2xl glass-card",
-                                        getSeverityStyle(item.severity)
-                                    )}
+                                    layout
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.05, type: "spring", stiffness: 100 }}
                                 >
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="flex items-center gap-3">
-                                            <div className={cn(
-                                                "p-2 rounded-lg",
-                                                item.severity === 'critical' ? 'bg-red-500/20' :
-                                                    item.severity === 'high' ? 'bg-orange-500/20' :
-                                                        'bg-primary/20'
-                                            )}>
-                                                <Icon className={cn(
-                                                    "h-5 w-5",
-                                                    item.severity === 'critical' ? 'text-red-500' :
-                                                        item.severity === 'high' ? 'text-orange-500' :
-                                                            'text-primary'
-                                                )} />
-                                            </div>
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className={cn(
-                                                        "px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase",
-                                                        getSeverityBadge(item.severity)
-                                                    )}>
-                                                        {item.type}
-                                                    </span>
-                                                    <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
-                                                        <Clock className="h-3 w-3" />
-                                                        {item.timestamp}
-                                                    </span>
+                                    <div
+                                        className={cn(
+                                            "relative overflow-hidden rounded-2xl p-6 cursor-pointer transition-all duration-300",
+                                            "bg-zinc-900/60 backdrop-blur-xl border hover:scale-[1.01]",
+                                            config.color,
+                                            isExpanded && "ring-2 ring-cyan-500/30"
+                                        )}
+                                        onClick={() => setExpandedId(isExpanded ? null : index)}
+                                    >
+                                        {/* Glow effect on hover */}
+                                        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
+
+                                        {/* Card Header */}
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div className="flex items-start gap-4 flex-1">
+                                                {/* Icon with animated background */}
+                                                <div className={cn(
+                                                    "relative p-3 rounded-xl border transition-all duration-300",
+                                                    config.badge,
+                                                    isExpanded && "scale-110"
+                                                )}>
+                                                    <Icon className="h-6 w-6 relative z-10" />
+                                                    <div className={cn(
+                                                        "absolute inset-0 rounded-xl blur-xl opacity-50",
+                                                        item.severity === 'critical' && "bg-red-500",
+                                                        item.severity === 'high' && "bg-orange-500",
+                                                        item.severity === 'medium' && "bg-yellow-500",
+                                                        item.severity === 'low' && "bg-cyan-500"
+                                                    )} />
                                                 </div>
-                                                <h3 className="text-lg font-bold text-foreground">
-                                                    {item.title}
-                                                </h3>
-                                            </div>
-                                        </div>
-                                    </div>
 
-                                    <p className="text-sm text-foreground/80 leading-relaxed">
-                                        {item.description}
-                                    </p>
-
-                                    {item.data && Array.isArray(item.data) && item.data.length > 0 && (
-                                        <div className="mt-4 pt-4 border-t border-border">
-                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                                {item.data.slice(0, 6).map((station: StationData, idx: number) => (
-                                                    <div key={idx} className="text-xs font-mono bg-background/50 rounded px-2 py-1 flex justify-between border border-border/50">
-                                                        <span className="text-muted-foreground truncate pr-2">{station.station.name}</span>
-                                                        <span className="text-primary font-bold">{station.aqi}</span>
+                                                <div className="flex-1 min-w-0">
+                                                    {/* Badges */}
+                                                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                                        <span className={cn(
+                                                            "text-xs font-mono uppercase px-3 py-1 rounded-full border font-bold",
+                                                            config.badge
+                                                        )}>
+                                                            {item.type}
+                                                        </span>
+                                                        <span className="text-xs text-zinc-500 flex items-center gap-1">
+                                                            <Clock className="h-3 w-3" />
+                                                            {item.timestamp}
+                                                        </span>
                                                     </div>
-                                                ))}
+
+                                                    {/* Title */}
+                                                    <h3 className={cn(
+                                                        "text-xl font-bold mb-2 transition-colors",
+                                                        config.textColor
+                                                    )}>
+                                                        {item.title}
+                                                    </h3>
+
+                                                    {/* Description */}
+                                                    <p className="text-sm text-zinc-300 leading-relaxed">
+                                                        {item.description}
+                                                    </p>
+                                                </div>
                                             </div>
+
+                                            {/* Expand Button */}
+                                            <button
+                                                className={cn(
+                                                    "p-2 rounded-lg transition-all duration-300",
+                                                    "hover:bg-cyan-500/10 border border-transparent hover:border-cyan-500/20",
+                                                    isExpanded && "bg-cyan-500/20 border-cyan-500/30"
+                                                )}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setExpandedId(isExpanded ? null : index);
+                                                }}
+                                            >
+                                                <motion.div
+                                                    animate={{ rotate: isExpanded ? 180 : 0 }}
+                                                    transition={{ duration: 0.3 }}
+                                                >
+                                                    <ChevronDown className={cn(
+                                                        "h-5 w-5 transition-colors",
+                                                        isExpanded ? "text-cyan-400" : "text-zinc-400"
+                                                    )} />
+                                                </motion.div>
+                                            </button>
                                         </div>
-                                    )}
-                                </div>
+
+                                        {/* Expanded Details */}
+                                        <AnimatePresence>
+                                            {isExpanded && item.details && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                                                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                    className="pt-4 border-t border-cyan-500/20"
+                                                >
+                                                    <div className="ml-[4.5rem]">
+                                                        <h4 className="text-sm font-bold text-zinc-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+                                                            <div className="h-1 w-1 rounded-full bg-cyan-500 animate-pulse" />
+                                                            Detailed Analysis
+                                                        </h4>
+                                                        {/* Scrollable container with max height */}
+                                                        <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                                                                {item.details.map((detail, i) => (
+                                                                    <motion.div
+                                                                        key={i}
+                                                                        initial={{ opacity: 0, x: -10 }}
+                                                                        animate={{ opacity: 1, x: 0 }}
+                                                                        transition={{ delay: i * 0.03 }}
+                                                                        className={cn(
+                                                                            "flex items-start gap-2 p-3 rounded-lg",
+                                                                            "bg-gradient-to-br from-cyan-500/5 to-transparent",
+                                                                            "border border-cyan-500/10 hover:border-cyan-500/20 transition-all"
+                                                                        )}
+                                                                    >
+                                                                        <div className="mt-1 flex-shrink-0">
+                                                                            <div className="h-1 w-1 rounded-full bg-cyan-400" />
+                                                                        </div>
+                                                                        <span className="text-xs text-zinc-200 flex-1 leading-relaxed">
+                                                                            {detail}
+                                                                        </span>
+                                                                    </motion.div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                </motion.div>
                             );
                         })}
                     </div>
                 )}
-
             </div>
         </main>
     );
