@@ -7,9 +7,10 @@ import { useRef, useEffect } from "react";
 interface BentoCardProps {
     children: React.ReactNode;
     className?: string;
+    onClick?: () => void;
 }
 
-export function BentoCard({ children, className }: BentoCardProps) {
+export function BentoCard({ children, className, onClick }: BentoCardProps) {
     const cardRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -34,10 +35,12 @@ export function BentoCard({ children, className }: BentoCardProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
+            onClick={onClick}
             className={cn(
                 "group relative overflow-hidden rounded-2xl bg-zinc-900/40 backdrop-blur-xl border border-white/10 p-6",
                 "hover:border-white/20 hover:bg-zinc-900/60",
                 "transition-all duration-500 ease-out",
+                onClick && "cursor-pointer",
                 className
             )}
         >
