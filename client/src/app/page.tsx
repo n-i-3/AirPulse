@@ -300,7 +300,14 @@ export default function Home() {
             </BentoCard>
 
             {/* Recent Reports */}
-            <BentoCard title="Verified Reports" icon={ShieldCheck} className="flex-1">
+            {/* Recent Reports */}
+            <BentoCard className="flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                  <ShieldCheck className="h-5 w-5 text-emerald-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Verified Reports</h3>
+              </div>
               <div className="space-y-3 overflow-y-auto max-h-[200px] pr-2 scrollbar-none mt-2">
                 {reports.length === 0 ? (
                   <div className="text-center text-zinc-500 py-8 text-sm italic">No recent reports found.</div>
