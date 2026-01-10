@@ -133,7 +133,7 @@ export default function Home() {
           </Link>
 
           {/* Critical Zones */}
-          <Link href="/intel" className="block cursor-pointer">
+          <Link href="/news" className="block cursor-pointer">
             <BentoCard className="p-6 hover:border-red-500/50 transition-colors">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20">
