@@ -1,4 +1,5 @@
 'use client';
+import Link from "next/link";
 
 import { useState, useEffect, useRef } from 'react';
 import { Header } from "@/components/layout/Header";
@@ -31,25 +32,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [systemConfidence, setSystemConfidence] = useState<number>(0);
   const [activeStations, setActiveStations] = useState<number>(0);
+  const [intelEvents, setIntelEvents] = useState<any[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Mouse tracking for spotlight effect
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current) return;
-      const cards = containerRef.current.getElementsByClassName("group");
-      for (const card of cards as any) {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        card.style.setProperty("--mouse-x", `${x}px`);
-        card.style.setProperty("--mouse-y", `${y}px`);
-      }
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  /* Mouse tracking effect removed for performance */
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -63,6 +49,7 @@ export default function Home() {
           setCriticalZones(summaryData.criticalZones || []);
           setSystemConfidence(summaryData.systemConfidence || 0);
           setActiveStations(summaryData.activeStations || 0);
+          setIntelEvents(summaryData.intelEvents || []);
         }
 
         // Fetch reports
@@ -87,6 +74,17 @@ export default function Home() {
     return "text-emerald-500";
   };
 
+  // Helper to map backend color names to Tailwind (for dynamic rendering)
+  const getColorClasses = (color: string) => {
+    switch (color) {
+      case 'cyan': return { dot: 'bg-cyan-500/50 border-cyan-500 group-hover:bg-cyan-400', text: 'text-zinc-200' };
+      case 'amber': return { dot: 'bg-amber-500/50 border-amber-500 group-hover:bg-amber-400', text: 'text-zinc-200' };
+      case 'emerald': return { dot: 'bg-emerald-500/50 border-emerald-500 group-hover:bg-emerald-400', text: 'text-zinc-200' };
+      case 'purple': return { dot: 'bg-purple-500/50 border-purple-500 group-hover:bg-purple-400', text: 'text-zinc-200' };
+      default: return { dot: 'bg-cyan-500/50 border-cyan-500 group-hover:bg-cyan-400', text: 'text-zinc-200' };
+    }
+  };
+
   return (
     <main ref={containerRef} className="min-h-screen bg-[#020617] text-white font-sans selection:bg-primary/30 relative overflow-x-hidden">
       <AtmosphereBackground />
@@ -97,77 +95,85 @@ export default function Home() {
         {/* Metric Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
           {/* Average AQI */}
-          <BentoCard className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-                <Activity className="h-5 w-5 text-cyan-400" />
+          <Link href="/sources" className="block cursor-pointer">
+            <BentoCard className="p-6 hover:border-cyan-500/50 transition-colors">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                  <Activity className="h-5 w-5 text-cyan-400" />
+                </div>
+                <div className="text-xs text-zinc-500 uppercase tracking-widest font-medium">Delhi NCR AQI</div>
               </div>
-              <div className="text-xs text-zinc-500 uppercase tracking-widest font-medium">Delhi NCR AQI</div>
-            </div>
-            <AnimatedCounter
-              value={avgAqi || 0}
-              className="text-4xl font-bold text-white font-mono mb-2 block"
-            />
-            <div className="text-xs text-zinc-400">
-              Live average across {activeStations} stations
-            </div>
-          </BentoCard>
+              <AnimatedCounter
+                value={avgAqi || 0}
+                className="text-4xl font-bold text-white font-mono mb-2 block"
+              />
+              <div className="text-xs text-zinc-400">
+                Live average across {activeStations} stations
+              </div>
+            </BentoCard>
+          </Link>
 
           {/* Verified Reports */}
-          <BentoCard className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                <ShieldCheck className="h-5 w-5 text-emerald-400" />
+          <Link href="/report" className="block cursor-pointer">
+            <BentoCard className="p-6 hover:border-emerald-500/50 transition-colors">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                  <ShieldCheck className="h-5 w-5 text-emerald-400" />
+                </div>
+                <div className="text-xs text-zinc-500 uppercase tracking-widest font-medium">Verified Reports</div>
               </div>
-              <div className="text-xs text-zinc-500 uppercase tracking-widest font-medium">Verified Reports</div>
-            </div>
-            <AnimatedCounter
-              value={reports.length || 0}
-              className="text-4xl font-bold text-emerald-500 font-mono mb-2 block"
-            />
-            <div className="text-xs text-zinc-400">
-              Citizen pollution reports on-chain
-            </div>
-          </BentoCard>
+              <AnimatedCounter
+                value={reports.length || 0}
+                className="text-4xl font-bold text-emerald-500 font-mono mb-2 block"
+              />
+              <div className="text-xs text-zinc-400">
+                Citizen pollution reports on-chain
+              </div>
+            </BentoCard>
+          </Link>
 
           {/* Critical Zones */}
-          <BentoCard className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20">
-                <AlertTriangle className="h-5 w-5 text-red-400" />
+          <Link href="/intel" className="block cursor-pointer">
+            <BentoCard className="p-6 hover:border-red-500/50 transition-colors">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20">
+                  <AlertTriangle className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="text-xs text-zinc-500 uppercase tracking-widest font-medium">Critical Zones</div>
               </div>
-              <div className="text-xs text-zinc-500 uppercase tracking-widest font-medium">Critical Zones</div>
-            </div>
-            <AnimatedCounter
-              value={criticalZones.length || 0}
-              className="text-4xl font-bold text-red-500 font-mono mb-2 block"
-            />
-            <div className="text-xs text-zinc-400">
-              Areas with AQI &gt; 200 requiring immediate action
-            </div>
-          </BentoCard>
+              <AnimatedCounter
+                value={criticalZones.length || 0}
+                className="text-4xl font-bold text-red-500 font-mono mb-2 block"
+              />
+              <div className="text-xs text-zinc-400">
+                Areas with AQI &gt; 200 requiring immediate action
+              </div>
+            </BentoCard>
+          </Link>
 
           {/* System Confidence */}
-          <BentoCard className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                <TrendingUp className="h-5 w-5 text-blue-400" />
+          <Link href="/forecast" className="block cursor-pointer">
+            <BentoCard className="p-6 hover:border-blue-500/50 transition-colors">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                  <TrendingUp className="h-5 w-5 text-blue-400" />
+                </div>
+                <div className="text-xs text-zinc-500 uppercase tracking-widest font-medium">System Confidence</div>
               </div>
-              <div className="text-xs text-zinc-500 uppercase tracking-widest font-medium">System Confidence</div>
-            </div>
-            <div className="text-4xl font-bold text-white font-mono mb-3 block">
-              {systemConfidence}%
-            </div>
-            <div className="w-full bg-zinc-800 rounded-full h-1.5 mb-2 overflow-hidden">
-              <div
-                className="h-full bg-blue-500 rounded-full transition-all duration-1000"
-                style={{ width: `${systemConfidence}%` }}
-              />
-            </div>
-            <div className="text-xs text-zinc-400">
-              Data accuracy and source reliability
-            </div>
-          </BentoCard>
+              <div className="text-4xl font-bold text-white font-mono mb-3 block">
+                {systemConfidence}%
+              </div>
+              <div className="w-full bg-zinc-800 rounded-full h-1.5 mb-2 overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 rounded-full transition-all duration-1000"
+                  style={{ width: `${systemConfidence}%` }}
+                />
+              </div>
+              <div className="text-xs text-zinc-400">
+                Data accuracy and source reliability
+              </div>
+            </BentoCard>
+          </Link>
         </div>
 
         {/* Main Content Grid */}
@@ -183,123 +189,83 @@ export default function Home() {
           {/* Right Sidebar - Intel */}
           <div className="lg:col-span-4 flex flex-col gap-6 h-full">
 
-            {/* System Intelligence Panel */}
-            <BentoCard className="p-6 flex-1 relative overflow-hidden">
-              <div className="flex items-center justify-between mb-6">
+            {/* System Intelligence Panel - V3 Situational Awareness Console */}
+            <BentoCard className="flex-1 relative overflow-hidden bg-slate-950 border-cyan-500/20 group flex flex-col">
+
+              {/* Header: Situation Summary */}
+              <div className="px-5 py-4 border-b border-cyan-500/10 bg-cyan-950/5 flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-                    <Zap className="h-5 w-5 text-white" />
+                  <div className={cn(
+                    "h-3 w-3 rounded-full animate-pulse shadow-[0_0_10px_currentColor]",
+                    avgAqi > 200 ? "bg-red-500 text-red-500" : avgAqi > 100 ? "bg-amber-500 text-amber-500" : "bg-emerald-500 text-emerald-500"
+                  )} />
+                  <div>
+                    <h3 className="text-sm font-bold text-white tracking-wide">SYSTEM INTELLIGENCE</h3>
+                    <p className={cn(
+                      "text-[10px] font-mono font-medium tracking-widest uppercase",
+                      avgAqi > 200 ? "text-red-400" : avgAqi > 100 ? "text-amber-400" : "text-emerald-400"
+                    )}>
+                      STATUS: {avgAqi > 200 ? "CRITICAL ALERT" : avgAqi > 100 ? "ELEVATED RISK" : "NOMINAL"}
+                    </p>
                   </div>
-                  <h3 className="text-lg font-bold text-white">System Intelligence</h3>
                 </div>
-                <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                  <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] text-emerald-500 font-mono tracking-wider font-bold">LIVE STREAM</span>
+                {/* Live Clock / Pulse */}
+                <div className="text-[10px] text-zinc-500 font-mono text-right">
+                  <div>T-{new Date().getSeconds().toString().padStart(2, '0')}s</div>
+                  <div className="text-cyan-600">SYNCED</div>
                 </div>
               </div>
 
-              {/* Intelligence Feed */}
-              <div className="space-y-4 overflow-y-auto max-h-[500px] custom-scrollbar pr-1">
-                {/* Grid Update */}
-                <div className="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
-                  <div className="flex items-start gap-3">
-                    <Globe className="h-4 w-4 text-zinc-400 mt-0.5" />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-mono text-zinc-500">SYSTEM_UPDATE</span>
-                        <span className="text-[10px] text-zinc-600 font-mono">Just now</span>
-                      </div>
-                      <p className="text-sm text-zinc-300 leading-relaxed">
-                        Monitoring active across <span className="font-mono text-white font-medium">{activeStations} stations</span>.
-                        Network latency: <span className="text-emerald-400 font-mono">12ms</span>.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+              {/* Body: Live Intelligence Feed */}
+              <div className="flex-1 p-5 overflow-y-auto custom-scrollbar space-y-4">
 
-                {/* Atmospheric Conditions */}
-                <div className="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
-                  <div className="flex items-start gap-3">
-                    <Activity className={cn(
-                      "h-4 w-4 mt-0.5",
-                      avgAqi > 200 ? "text-red-400" : avgAqi > 100 ? "text-yellow-400" : "text-emerald-400"
-                    )} />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className={cn(
-                          "text-xs font-mono font-medium",
-                          avgAqi > 200 ? "text-red-400" : avgAqi > 100 ? "text-yellow-400" : "text-emerald-400"
-                        )}>
-                          ATMOSPHERIC_STATUS: {avgAqi > 200 ? "CRITICAL" : avgAqi > 100 ? "DEGRADED" : "OPTIMAL"}
-                        </span>
-                      </div>
-                      <p className="text-sm text-zinc-300 leading-relaxed">
-                        {avgAqi > 200
-                          ? `Hazardous PM2.5 levels detected. Health advisory protocols active.`
-                          : avgAqi > 100
-                            ? `Moderate pollution levels observed. Sensitive groups should exercise caution.`
-                            : `Air quality indices are within standard safety parameters.`
-                        }
+                {/* Dynamic Insight Generator (Mocking the 'Engine' output visually for V3) */}
+                {avgAqi > 200 && (
+                  <div className="p-3 bg-red-950/20 border-l-2 border-red-500 rounded-r flex gap-3">
+                    <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-xs font-bold text-red-100 mb-1">Hazardous Conditions Detected</h4>
+                      <p className="text-[11px] text-red-200/70 leading-relaxed">
+                        PM2.5 levels exceeding safety thresholds in {criticalZones.length} zones. Immediate containment protocols recommended.
                       </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Warning Alert */}
-                {criticalZones.length > 0 && (
-                  <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-                    <div className="flex items-start gap-3">
-                      <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 animate-pulse" />
-                      <div className="flex-1">
-                        <div className="text-xs font-bold text-red-400 font-mono mb-2">CRITICAL_ZONES_DETECTED</div>
-                        <div className="flex flex-wrap gap-2">
-                          {criticalZones.slice(0, 4).map((zone: any, i) => (
-                            <span key={i} className="px-2 py-1 rounded bg-red-950/50 text-red-200 text-xs font-medium border border-red-500/20">
-                              {zone.name}
-                            </span>
-                          ))}
-                          {criticalZones.length > 4 && (
-                            <span className="px-2 py-1 rounded bg-red-950/50 text-red-200 text-xs">+ {criticalZones.length - 4} more</span>
-                          )}
-                        </div>
-                      </div>
                     </div>
                   </div>
                 )}
 
-                {/* Action Protocol */}
-                <div className="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
-                  <div className="flex items-start gap-3">
-                    <Cpu className="h-4 w-4 text-zinc-400 mt-0.5" />
-                    <div className="flex-1">
-                      <div className="text-xs font-mono text-zinc-500 mb-1">MITIGATION_PROTOCOL</div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                          <motion.div
-                            className={cn(
-                              "h-full rounded-full",
-                              avgAqi > 200 ? "bg-red-500" : "bg-emerald-500"
-                            )}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${systemConfidence}%` }}
-                            transition={{ duration: 1 }}
-                          />
+                {/* Latest Intel Events - Plain English */}
+                <div className="space-y-3">
+                  <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider pl-1">Live Updates</div>
+
+                  {/* Map over Dynamic Events */}
+                  {intelEvents.map((event, i) => {
+                    const colors = getColorClasses(event.color);
+                    return (
+                      <div key={i} className="group flex gap-3 items-start p-2 rounded hover:bg-white/5 transition-colors cursor-pointer">
+                        <div className={cn("mt-1 h-2 w-2 rounded-full border", colors.dot)} />
+                        <div>
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className={cn("text-[11px] font-bold", colors.text)}>{event.title}</span>
+                            <span className="text-[9px] text-zinc-500 font-mono">{event.time}</span>
+                          </div>
+                          <p className="text-[11px] text-zinc-400 leading-snug">
+                            {event.description}
+                          </p>
                         </div>
-                        <span className="text-xs font-mono text-white">{systemConfidence}% ready</span>
                       </div>
-                      <p className="text-xs text-zinc-500 mt-2">
-                        {criticalZones.length > 0
-                          ? "Automated alerts dispatched to zonal authorities."
-                          : "System standby. Routine monitoring in progress."
-                        }
-                      </p>
-                    </div>
-                  </div>
+                    );
+                  })}
+
+                  {/* Fallback if no events */}
+                  {intelEvents.length === 0 && (
+                    <div className="text-[10px] text-zinc-600 italic pl-2">Waiting for new intelligence...</div>
+                  )}
+
                 </div>
+
               </div>
+
             </BentoCard>
 
-            {/* Recent Reports */}
             {/* Recent Reports */}
             <BentoCard className="flex-1">
               <div className="flex items-center gap-3 mb-4">

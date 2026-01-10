@@ -194,9 +194,9 @@ export default function ReportPage() {
                                     <ShieldCheck className="mr-2 h-5 w-5" />
                                     Connect Wallet to Report
                                 </Button>
-                                <Button variant="outline" size="lg" className="h-14 text-lg px-8 border-white/10 hover:bg-white/5 rounded-2xl text-white">
-                                    Read Protocol
-                                </Button>
+                                <div className="flex items-center justify-center lg:justify-start h-14 px-4 group cursor-pointer hover:text-emerald-400 text-zinc-400 transition-colors">
+                                    <span className="text-sm font-mono tracking-wider border-b border-transparent group-hover:border-emerald-500/50 pb-0.5">READ_PROTOCOL_V2</span>
+                                </div>
                             </div>
                         </div>
 
@@ -263,6 +263,7 @@ export default function ReportPage() {
                                 </h1>
                                 <p className="text-sm text-zinc-400">
                                     Submit authenticated evidence to the AirPulse Governance Ledger.
+                                    This ensures reports cannot be deleted or manipulated, even under pressure.
                                 </p>
                             </div>
 

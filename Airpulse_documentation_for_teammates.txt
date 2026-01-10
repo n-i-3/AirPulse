@@ -1,91 +1,353 @@
-Structure in this exact order:
+================================================================================
+                        AIRPULSE - COMPLETE HACKATHON DOCUMENTATION
+                            (Hack4Delhi 2026 - Technical Guide)
+================================================================================
 
-1. WHAT IT DOES (Features)
-2. HOW WE BUILT IT (Tech Stack)
-3. DEEP DIVE (Page-by-Page Implementation)
+TABLE OF CONTENTS
+-----------------
+1. EXECUTIVE SUMMARY
+2. EXTERNAL APIS USED
+3. FEATURE BREAKDOWN (Page by Page)
+4. BACKEND API REFERENCE
+5. DATA FLOW ARCHITECTURE
+6. SECURITY & VERIFICATION
+7. AI/ML COMPONENTS
+8. SCALABILITY & PERFORMANCE
 
+================================================================================
+PART 1: EXECUTIVE SUMMARY
+================================================================================
 
-PART 1: KEY FEATURES (What makes this special?)
------------------------------------------------
-"AirPulse is an end-to-end Air Quality Command Center."
+AirPulse is a real-time Air Quality Command Center for Delhi NCR. It combines:
+- LIVE sensor data from 100+ ground stations
+- AI-powered predictions for next 24 hours
+- Blockchain-verified citizen pollution reports
+- Source attribution (identifying where pollution comes from)
 
-1. Real-Time Monitoring: We don't show old data. We show live, breathing data from thousands of sensors across Delhi NCR.
-2. AI Forecasting: We don't just report the past. Our Edge AI model predicts the next 24 hours of air quality so citizens can plan their day.
-3. Verified Citizen Reporting: We allow users to report pollution (like garbage burning). We use Cryptography to make these reports verifiable but anonymous.
-4. Intelligent Analytics: We automatically analyze pollution sources (is it dust? is it traffic?) and generate health recommendations.
+TARGET USERS: Government officials, Environmental agencies, Citizens
 
+================================================================================
+PART 2: EXTERNAL APIS USED
+================================================================================
 
-PART 2: THE TECH STACK (The Tools We Used)
-------------------------------------------
-"We used a modern, high-performance stack to ensure speed and scalability."
+We integrate with the following third-party APIs:
 
-1. Frontend: Next.js 15
-   - Used for: The User Interface.
-   - Why: It's super fast because it renders pages on the server before sending them to the phone.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 1. WAQI (World Air Quality Index) API                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Website: https://aqicn.org/data-platform/token/                              │
+│ Purpose: Real-time AQI data from ground stations                             │
+│ Endpoints Used:                                                              │
+│   - GET /map/bounds/?latlng={lat1},{lng1},{lat2},{lng2}&token={token}        │
+│     Returns all stations within geographic bounds                            │
+│   - GET /feed/{station}/?token={token}                                       │
+│     Returns detailed data for a specific station                             │
+│ Data Returned: AQI value, PM2.5, PM10, NO2, CO, O3, Temperature, Humidity    │
+│ Rate Limit: 1000 requests/day (free tier)                                    │
+│ Cost: FREE for non-commercial use                                            │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-2. Backend: Node.js & Express
-   - Used for: The "Brain" of the operation.
-   - Why: It fetches data from external APIs, cleans it, and serves it to our app securely.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 2. OpenWeatherMap API                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Website: https://openweathermap.org/api                                      │
+│ Purpose: Real-time weather data for forecast model                           │
+│ Endpoints Used:                                                              │
+│   - GET /data/2.5/weather?lat={lat}&lon={lon}&units=metric&appid={key}       │
+│     Returns current weather conditions                                       │
+│ Data Returned: Temperature, Humidity, Wind Speed, Wind Direction, Pressure  │
+│ Rate Limit: 60 requests/minute (free tier)                                   │
+│ Cost: FREE for personal use (up to 1M calls/month)                           │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-3. Database: MongoDB
-   - Used for: Storing Reports and User Data.
-   - Why: It's flexible and allows us to save complex data like location coordinates and pollution logs easily.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 3. Privy Authentication                                                      │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Website: https://privy.io                                                    │
+│ Purpose: User authentication + embedded Web3 wallet                          │
+│ How It Works:                                                                │
+│   - User logs in with Email/Google/Phone                                     │
+│   - Privy creates an embedded crypto wallet in the background                │
+│   - Wallet address is used as unique user identifier                         │
+│ Why We Use It:                                                               │
+│   - Provides "Web2" UX (email login) with "Web3" capabilities (wallets)      │
+│   - Enables future on-chain report verification                              │
+│ Cost: FREE for up to 1000 users                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-4. Authentication: Privy
-   - Used for: Login and Wallets.
-   - Why: It lets users login with just an email but gives them a powerful Crypto Wallet in the background.
+================================================================================
+PART 3: FEATURE BREAKDOWN (Page by Page)
+================================================================================
 
-5. AI Engine: TensorFlow & Math.js
-   - Used for: Calculating predictions in the browser.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PAGE: OVERVIEW (/)                                                           │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ PURPOSE: The main command center dashboard                                   │
+│                                                                              │
+│ FEATURE 1: Live Heatmap                                                      │
+│ - Uses: Leaflet.js (map library) + React-Leaflet                             │
+│ - Data Source: WAQI API via /api/aqi/bounds                                  │
+│ - How: Fetches all stations in Delhi NCR bounds (28.4-28.9°N, 76.8-77.4°E)   │
+│ - Rendering: Each station becomes a CircleMarker with color based on AQI     │
+│   - Green: AQI 0-50 (Good)                                                   │
+│   - Yellow: AQI 51-100 (Moderate)                                            │
+│   - Orange: AQI 101-150 (Unhealthy for Sensitive)                            │
+│   - Red: AQI 151-200 (Unhealthy)                                             │
+│   - Purple: AQI 201-300 (Very Unhealthy)                                     │
+│   - Maroon: AQI 300+ (Hazardous)                                             │
+│                                                                              │
+│ FEATURE 2: Metric Cards (AQI, Reports, Zones, Confidence)                    │
+│ - Data Source: /api/dashboard/summary                                        │
+│ - Each card is CLICKABLE and navigates to relevant page                      │
+│   - Delhi NCR AQI → /sources                                                 │
+│   - Verified Reports → /report                                               │
+│   - Critical Zones → /intel                                                  │
+│   - System Confidence → /forecast                                            │
+│                                                                              │
+│ FEATURE 3: System Intelligence Panel                                         │
+│ - Data Source: Backend-generated "intelEvents" from /api/dashboard/summary   │
+│ - REAL-TIME LOGIC:                                                           │
+│   - If stations > 5: "Satellite Data Verified" event                         │
+│   - If criticalZones > 0: "Waste Burning Detected" event                     │
+│   - Else if avgAqi < 150: "Wind Clearing Pollution" event                    │
+│   - Always: "New Zone Regulation" governance event                           │
+│ - Updates dynamically based on live pollution data                           │
+└──────────────────────────────────────────────────────────────────────────────┘
 
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PAGE: AI FORECAST (/forecast)                                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ PURPOSE: 24-hour AQI predictions with AI analysis                            │
+│                                                                              │
+│ FEATURE 1: Prediction Chart                                                  │
+│ - Algorithm: "Harmonic Analysis" (Sine Wave + Trend Extrapolation)           │
+│ - How It Works:                                                              │
+│   1. Takes current AQI as baseline                                           │
+│   2. Applies daily temperature cycle (pollution spikes at night)             │
+│   3. Calculates rate-of-change trend                                         │
+│   4. Projects forward for 24 hours                                           │
+│ - Runs ENTIRELY CLIENT-SIDE (works offline!)                                 │
+│                                                                              │
+│ FEATURE 2: Dynamic Confidence Score                                          │
+│ - Formula: (stationCount / 50) * 100 * 0.95                                  │
+│ - Meaning: More stations = higher confidence, capped at 95%                  │
+│ - Updates automatically when data loads                                      │
+│                                                                              │
+│ FEATURE 3: Real Weather Data                                                 │
+│ - Source: OpenWeatherMap API                                                 │
+│ - Shows: Wind Speed (km/h), Temperature (°C), Humidity (%)                   │
+│ - Progress bars are DYNAMIC based on actual values                           │
+│ - Fallback: Uses defaults if API fails                                       │
+│                                                                              │
+│ FEATURE 4: Ward Selector                                                     │
+│ - Predefined geographic bounds for:                                          │
+│   - All Delhi NCR, Connaught Place, Dwarka, Rohini, Okhla, Anand Vihar       │
+│ - Switching wards triggers "model retraining" animation (2s visual effect)   │
+│                                                                              │
+│ FEATURE 5: AI Action Plan                                                    │
+│ - Rule-based recommendations:                                                │
+│   - avgAqi > 200: "CRITICAL: Halt construction works"                        │
+│   - avgAqi > 150: "HIGH ALERT: Activate GRAP-III protocols"                  │
+│   - else: "STABLE: Continue standard monitoring"                             │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-PART 3: PAGE-BY-PAGE DEEP DIVE (The "How It Works")
----------------------------------------------------
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PAGE: REPORT (/report)                                                       │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ PURPOSE: Citizen pollution reporting with verification                       │
+│                                                                              │
+│ FEATURE 1: Wallet-Based Authentication                                       │
+│ - Provider: Privy SDK                                                        │
+│ - Flow:                                                                      │
+│   1. User clicks "Connect Wallet"                                            │
+│   2. Privy opens login modal (Email/Google/Phone)                            │
+│   3. On success, embedded wallet is created                                  │
+│   4. Wallet address becomes user identifier                                  │
+│                                                                              │
+│ FEATURE 2: Report Submission                                                 │
+│ - Form Fields: Location, Description, Photo (optional)                       │
+│ - Backend: POST /api/reports                                                 │
+│ - Verification: SHA-256 hash of (userID + timestamp) stored as "proof"       │
+│                                                                              │
+│ FEATURE 3: ZK Proof Simulation                                               │
+│ - We SIMULATE zero-knowledge verification                                    │
+│ - The hash proves the report existed at a specific time                      │
+│ - User identity is linked but not revealed publicly                          │
+└──────────────────────────────────────────────────────────────────────────────┘
 
---- PAGE 1: THE DASHBOARD (Overview) ---
-"This is the first thing functionality users see."
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PAGE: SOURCES (/sources)                                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ PURPOSE: Ward-wise pollution source attribution                              │
+│                                                                              │
+│ FEATURE 1: Ward Data Grid                                                    │
+│ - Endpoint: /api/sources/wards                                               │
+│ - Shows: Each ward with its AQI, dominant pollutant, source type             │
+│                                                                              │
+│ FEATURE 2: Source Identification Algorithm                                   │
+│ - Logic runs on BACKEND (sourceController.js):                               │
+│   - If NO2 > 80: Flag as "Traffic/Vehicular"                                 │
+│   - If PM10 > PM2.5 * 2: Flag as "Construction Dust"                         │
+│   - If PM2.5 > 200: Flag as "Biomass Burning"                                │
+│   - Default: "Mixed Sources"                                                 │
+│                                                                              │
+│ FEATURE 3: Health Recommendations                                            │
+│ - Auto-generated based on AQI level                                          │
+│ - Examples: "Avoid outdoor exercise", "Use N95 masks"                        │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-*   Feature: The Live Heatmap
-    - How we built it: We use "Learflet.js" for the map interactions.
-    - The Tech: The backend fetches raw GPS coordinates from the WAQI API. It converts them into a standardized JSON format. The Frontend then loops through this array and renders a <CircleMarker> for each station. The color (Red/Green) is determined dynamically by a javascript function checking the AQI value.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PAGE: INTEL (/intel or /news)                                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ PURPOSE: Automated pollution alerts and news                                 │
+│                                                                              │
+│ FEATURE 1: Auto-Generated Alerts                                             │
+│ - Backend: Scans for stations with AQI > 300                                 │
+│ - Creates alert objects with timestamp and severity                          │
+│ - Pushed to frontend via API                                                 │
+│                                                                              │
+│ FEATURE 2: System Intelligence Events                                        │
+│ - Same data as Overview page intelligence panel                              │
+│ - Shows satellite verification, burning detection, etc.                      │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-*   Feature: Real-Time Statistics
-    - How we built it: The "Active Reporters" count isn't fake. It's a live count from our MongoDB database. Every time someone submits a report, this number increments instantly across the world.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PAGE: COMMUNITY (/community)                                                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ PURPOSE: Social layer for citizen reports                                    │
+│                                                                              │
+│ FEATURE 1: Report Feed                                                       │
+│ - Endpoint: GET /api/reports                                                 │
+│ - Shows all submitted citizen reports                                        │
+│                                                                              │
+│ FEATURE 2: Voting System                                                     │
+│ - Endpoints: POST /api/reports/{id}/upvote, POST /api/reports/{id}/downvote  │
+│ - Community can validate or dispute reports                                  │
+│                                                                              │
+│ FEATURE 3: Comments                                                          │
+│ - Endpoint: POST /api/reports/{id}/comments                                  │
+│ - Allows discussion on each report                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
 
---- PAGE 2: THE AI FORECAST PAGE ---
-"This is where the magic happens."
+================================================================================
+PART 4: BACKEND API REFERENCE
+================================================================================
 
-*   Feature: The Prediction Chart
-    - How we built it: We implemented a custom algorithm called "Harmonic Analysis" strictly on the Client Side.
-    - The Tech: We take the current API reading. We apply a mathematical "Sine Wave" function to simulate the daily temperature drops (which cause pollution spikes at night). We combines this with the recent rate-of-change trend. 
-    - Why this is cool: Because it runs in the browser, it works even if the internet is slow or offline for a moment.
+BASE URL: http://localhost:5000 (dev) | https://airpulse-server.onrender.com
 
-*   Feature: Ward Selection
-    - How we built it: We mapped the exact Latitude/Longitude boundaries of major wards (like Rohini, Dwarka) in our backend.
-    - The Tech: When you select a ward, the Node.js server filters the thousands of sensors to find only the ones inside that specific rectangle and calculates a "Weighted Average" for accuracy.
+┌─────────────────────────────────────────────────────────────────┐
+│ ENDPOINT                          │ METHOD │ DESCRIPTION       │
+├─────────────────────────────────────────────────────────────────┤
+│ /api/aqi/bounds                   │ GET    │ AQI for geo bounds│
+│ /api/aqi/station/:id              │ GET    │ Single station    │
+│ /api/dashboard/summary            │ GET    │ Dashboard metrics │
+│ /api/sources                      │ GET    │ Source analysis   │
+│ /api/sources/wards                │ GET    │ Ward breakdown    │
+│ /api/reports                      │ GET    │ All reports       │
+│ /api/reports                      │ POST   │ Submit report     │
+│ /api/reports/:id/upvote           │ POST   │ Upvote report     │
+│ /api/reports/:id/downvote         │ POST   │ Downvote report   │
+│ /api/reports/:id/comments         │ GET    │ Get comments      │
+│ /api/reports/:id/comments         │ POST   │ Add comment       │
+│ /api/auth/login                   │ POST   │ User login        │
+└─────────────────────────────────────────────────────────────────┘
 
---- PAGE 3: THE REPORT PAGE ---
-"This is our Citizen Science layer."
+================================================================================
+PART 5: DATA FLOW ARCHITECTURE
+================================================================================
 
-*   Feature: "Connect Wallet" / Login
-    - How we built it: We strictly used the "Privy SDK".
-    - The Tech: When a user logs in, Privy creates an "Embedded Wallet" inside the app. We verify this wallet is active before allowing them to open the camera.
+                    ┌─────────────────┐
+                    │   WAQI API      │
+                    │ (Ground Sensors)│
+                    └────────┬────────┘
+                             │ Real-time AQI
+                             ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         NODE.JS BACKEND (Express)                            │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │ AQI Routes  │  │ Source Ctrl │  │ Dashboard   │  │ Intel Generator     │  │
+│  │ /api/aqi/*  │  │ /api/sources│  │ /api/dash   │  │ (intelEvents logic) │  │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+│                              │                                                │
+│                              ▼                                                │
+│                    ┌─────────────────┐                                        │
+│                    │    MongoDB      │                                        │
+│                    │ (Reports, Users)│                                        │
+│                    └─────────────────┘                                        │
+└──────────────────────────────────────────────────────────────────────────────┘
+                             │ JSON API
+                             ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         NEXT.JS FRONTEND (React)                             │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │ Overview    │  │ Forecast    │  │ Report      │  │ Sources / Intel     │  │
+│  │ (Dashboard) │  │ (AI Predict)│  │ (Submit)    │  │ (Analysis)          │  │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────────────┘  │
+│                              │                                                │
+│                              ▼                                                │
+│                    ┌─────────────────┐                                        │
+│                    │    BROWSER      │                                        │
+│                    │  (User's Phone) │                                        │
+│                    └─────────────────┘                                        │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-*   Feature: Secure Evidence Submission
-    - How we built it: We treat every report like a financial transaction.
-    - The Tech: When the form is submitted, we take the User ID and specific Timestamp. We run it through a "SHA-256 Hashing Algorithm". This generates a unique digital fingerprint for that exact report. We save this fingerprint in MongoDB. This ensures that no one can fake or duplicate reports later.
+================================================================================
+PART 6: SECURITY & VERIFICATION
+================================================================================
 
---- PAGE 4: THE SOURCES PAGE ---
-"This helps officials know WHAT to fix."
+1. REPORT VERIFICATION
+   - Each report gets a SHA-256 hash of (userID + timestamp)
+   - Hash stored in MongoDB as tamper-proof fingerprint
+   - Can be verified later to prove report authenticity
 
-*   Feature: Source Identification
-    - How we built it: Pure Backend Logic.
-    - The Tech: The server compares different pollutant values (PM2.5 vs PM10 vs NO2).
-    - The Logic: If NO2 is high, the code flags it as "Traffic Pollution". If PM10 is high, it flags "Construction Dust". This logic runs automatically on every data update.
+2. USER AUTHENTICATION
+   - Privy handles all auth (no passwords stored)
+   - JWT tokens for session management
+   - Wallet address as unique identifier
 
---- PAGE 5: INTELLIGENCE FEED ---
-"The automated news anchor."
+3. API SECURITY
+   - CORS configured for allowed origins
+   - Environment variables for all secrets
+   - No API keys exposed to frontend
 
-*   Feature: Auto-Generated Alerts
-    - How we built it: Server-Side Polling.
-    - The Tech: A background job runs every 5 minutes on the server. It scans the database for any station exceeding 300 AQI. If found, it creates a new "Alert Object" and pushes it to the frontend via the API
+================================================================================
+PART 7: AI/ML COMPONENTS
+================================================================================
+
+CURRENT IMPLEMENTATION (Heuristic-Based):
+- NOT a trained ML model (yet)
+- Uses rule-based logic for predictions and recommendations
+- Confidence score based on data quality
+
+PREDICTION ALGORITHM (Client-Side):
+1. Take current AQI value
+2. Apply sine wave for daily temperature cycle
+3. Add trend extrapolation based on recent changes
+4. Project forward for 24 hours
+
+FUTURE ROADMAP:
+- TensorFlow.js LSTM model for time-series prediction
+- Training on historical WAQI data
+- Real-time model inference in browser
+
+================================================================================
+PART 8: SCALABILITY & PERFORMANCE
+================================================================================
+
+1. CACHING
+   - Frontend: React Query for API response caching
+   - Backend: Consider Redis for high-traffic scenarios
+
+2. OPTIMIZATIONS
+   - Removed heavy mouse-tracking animations
+   - CSS animations are GPU-accelerated
+   - Lazy loading for map components
+
+3. DEPLOYMENT
+   - Frontend: Vercel (auto-scaling, CDN)
+   - Backend: Render (free tier, auto-sleep on inactivity)
+   - Database: MongoDB Atlas (free tier, 512MB)
+
+================================================================================
+                              END OF DOCUMENTATION
+================================================================================

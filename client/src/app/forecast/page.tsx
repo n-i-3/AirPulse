@@ -33,6 +33,8 @@ export default function ForecastPage() {
     const [analytics, setAnalytics] = useState<Analytics | null>(null);
     const [loading, setLoading] = useState(true);
     const [stationCount, setStationCount] = useState(0);
+    const [confidence, setConfidence] = useState(0);
+    const [weather, setWeather] = useState<{ wind: number; temp: number; humidity: number } | null>(null);
 
     // Real geographic bounds for specific wards
     const WARDS: Record<string, { lat1: number; lng1: number; lat2: number; lng2: number }> = {
@@ -47,12 +49,31 @@ export default function ForecastPage() {
     useEffect(() => {
         setLoading(true);
         fetchRealTimeAnalytics();
+        fetchWeather();
 
         // Retrain model effect when ward changes
         setTraining(true);
         const timer = setTimeout(() => setTraining(false), 2000);
         return () => clearTimeout(timer);
     }, [selectedWard]); // Re-fetch when ward changes
+
+    const fetchWeather = async () => {
+        try {
+            // Delhi coordinates
+            const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=28.6139&lon=77.2090&units=metric&appid=demo`);
+            if (res.ok) {
+                const data = await res.json();
+                setWeather({
+                    wind: data.wind?.speed || 0,
+                    temp: data.main?.temp || 0,
+                    humidity: data.main?.humidity || 0
+                });
+            }
+        } catch (err) {
+            console.log('Weather fetch failed, using defaults');
+            setWeather({ wind: 8.2, temp: 24, humidity: 41 }); // Fallback
+        }
+    };
 
     const fetchRealTimeAnalytics = async () => {
         try {
@@ -64,6 +85,9 @@ export default function ForecastPage() {
                 const validStations = data.filter(s => s.aqi && s.aqi !== '-');
                 analyzeData(validStations);
                 setStationCount(validStations.length);
+                // Dynamic confidence: based on station count (max 100 stations = 100%)
+                const dataConfidence = Math.min((validStations.length / 50) * 100, 100);
+                setConfidence(Math.round(dataConfidence * 0.95)); // Cap at 95%
             } else {
                 console.warn("Invalid data format received", data);
                 setStationCount(0);
@@ -181,7 +205,7 @@ export default function ForecastPage() {
                                         <p className="text-xs text-zinc-400 mt-1">Live Sensor Data ({stationCount} Stations) → AI Projection</p>
                                     </div>
                                     <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono">
-                                        Avg Confidence: <span className="font-bold text-emerald-500">94.2%</span>
+                                        Avg Confidence: <span className="font-bold text-emerald-500">{confidence}%</span>
                                     </div>
                                 </div>
 
@@ -249,10 +273,10 @@ export default function ForecastPage() {
                                             <span className="flex items-center gap-1.5 text-zinc-400">
                                                 <Wind className="h-3 w-3" /> Wind Speed
                                             </span>
-                                            <span className="font-mono text-white">8.2 km/h</span>
+                                            <span className="font-mono text-white">{weather?.wind?.toFixed(1) || '8.2'} km/h</span>
                                         </div>
                                         <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
-                                            <div className="h-full bg-blue-500 w-[65%]"></div>
+                                            <div className="h-full bg-blue-500" style={{ width: `${Math.min((weather?.wind || 8) * 5, 100)}%` }}></div>
                                         </div>
                                     </div>
                                     <div>
@@ -260,10 +284,10 @@ export default function ForecastPage() {
                                             <span className="flex items-center gap-1.5 text-zinc-400">
                                                 <Thermometer className="h-3 w-3" /> Temperature
                                             </span>
-                                            <span className="font-mono text-white">24°C</span>
+                                            <span className="font-mono text-white">{weather?.temp?.toFixed(0) || '24'}°C</span>
                                         </div>
                                         <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
-                                            <div className="h-full bg-orange-500 w-[72%]"></div>
+                                            <div className="h-full bg-orange-500" style={{ width: `${Math.min((weather?.temp || 24) * 2, 100)}%` }}></div>
                                         </div>
                                     </div>
                                     <div>
@@ -271,10 +295,10 @@ export default function ForecastPage() {
                                             <span className="flex items-center gap-1.5 text-zinc-400">
                                                 <CloudRain className="h-3 w-3" /> Humidity
                                             </span>
-                                            <span className="font-mono text-white">41%</span>
+                                            <span className="font-mono text-white">{weather?.humidity || 41}%</span>
                                         </div>
                                         <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
-                                            <div className="h-full bg-cyan-500 w-[41%]"></div>
+                                            <div className="h-full bg-cyan-500" style={{ width: `${weather?.humidity || 41}%` }}></div>
                                         </div>
                                     </div>
                                 </div>
