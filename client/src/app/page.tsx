@@ -217,7 +217,7 @@ export default function Home() {
               </div>
 
               {/* Body: Live Intelligence Feed */}
-              <div className="flex-1 p-5 overflow-y-auto custom-scrollbar space-y-4">
+              <div className="flex-1 p-5 overflow-y-auto max-h-[350px] custom-scrollbar space-y-4">
 
                 {/* Dynamic Insight Generator (Mocking the 'Engine' output visually for V3) */}
                 {avgAqi > 200 && (
