@@ -1,6 +1,7 @@
 const firmsService = require('../services/firmsService');
 const weatherService = require('../services/weatherService');
 const waqiService = require('../services/waqiService');
+const idwService = require('../services/idwService');
 
 /**
  * Get ward-wise pollution source analysis
@@ -317,7 +318,59 @@ const isRushHour = () => {
     return (hour >= 8 && hour <= 10) || (hour >= 18 && hour <= 20);
 };
 
+/**
+ * Get interpolated AQI for all major Delhi localities
+ * Uses Inverse Distance Weighting (IDW) for areas without stations
+ * GET /api/sources/interpolated
+ */
+const getInterpolatedAQI = async (req, res) => {
+    try {
+        // Get all stations in Delhi NCR bounds
+        const stations = await waqiService.getAQIByBounds(28.4, 76.8, 28.9, 77.4);
+
+        if (!stations || stations.length === 0) {
+            return res.status(404).json({ message: 'No station data available' });
+        }
+
+        // Get interpolated values for all localities
+        const localities = idwService.getInterpolatedLocalities(stations);
+
+        // Separate direct vs interpolated for stats
+        const directCount = localities.filter(l => l.method === 'direct').length;
+        const interpolatedCount = localities.filter(l => l.method === 'idw').length;
+        const noDataCount = localities.filter(l => l.method === 'none').length;
+
+        // Sort by AQI (worst first)
+        localities.sort((a, b) => (b.aqi || 0) - (a.aqi || 0));
+
+        res.json({
+            total_localities: localities.length,
+            direct_stations: directCount,
+            interpolated: interpolatedCount,
+            no_data: noDataCount,
+            avg_confidence: Math.round(
+                localities.filter(l => l.confidence > 0)
+                    .reduce((sum, l) => sum + l.confidence, 0) /
+                localities.filter(l => l.confidence > 0).length
+            ),
+            critical_count: localities.filter(l => l.aqi > 200).length,
+            localities: localities,
+            algorithm: {
+                name: 'Inverse Distance Weighting (IDW)',
+                power: 2,
+                max_distance_km: 20,
+                description: 'Estimates AQI using weighted average of nearby stations. Closer stations have more influence.'
+            },
+            source_stations: stations.length
+        });
+    } catch (error) {
+        console.error('Interpolated AQI error:', error);
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
 module.exports = {
     getSourceAnalysis,
-    getWardSourceAnalysis
+    getWardSourceAnalysis,
+    getInterpolatedAQI
 };

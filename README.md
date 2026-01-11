@@ -35,6 +35,13 @@ Citizens can report pollution sources (like garbage burning or construction dust
 ### 4. Sources & Intel
 We don't just show you the pollution; we show you where it's coming from. The "Sources" tab breaks down contribution factors (Transport, Industry, Dust), and the "Intel" tab aggregates relevant news and updates.
 
+### 5. IDW Spatial Interpolation (NEW!)
+Not every locality has a physical sensor. We use **Inverse Distance Weighting (IDW)** to estimate AQI for 228 localities across Delhi NCR:
+- **Algorithm**: Nearby stations influence estimates based on distance (closer = more weight)
+- **Coverage**: Rohini, Dwarka, Saket, Noida, Gurgaon, Faridabad, Ghaziabad + 220 more
+- **Toggle**: Switch between "Stations Only" (real sensors) and "IDW Coverage" (full map)
+- **Transparency**: Each point shows confidence % and whether it's a direct reading or interpolated
+
 ---
 
 ## 🛠️ Tech Stack
@@ -141,7 +148,7 @@ AirPulse/
 │
 ├── server/                 # Node.js Backend
 │   ├── src/controllers/   # API request handlers
-│   ├── src/services/      # External API integrations (WAQI, Weather)
+│   ├── src/services/      # External API integrations (WAQI, Weather, IDW)
 │   ├── src/models/        # Mongoose schemas (Reports, Users)
 │   └── .env               # Backend environment variables
 │

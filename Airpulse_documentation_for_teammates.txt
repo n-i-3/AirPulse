@@ -194,6 +194,71 @@ PART 3: FEATURE BREAKDOWN (Page by Page)
 │ FEATURE 3: Health Recommendations                                            │
 │ - Auto-generated based on AQI level                                          │
 │ - Examples: "Avoid outdoor exercise", "Use N95 masks"                        │
+│                                                                              │
+│ FEATURE 4: IDW Toggle (NEW!)                                                 │
+│ - Switch between "Stations Only" and "IDW Coverage" modes                    │
+│ - IDW mode shows 228 localities with interpolated AQI                        │
+│ - Clearly labels each point as "DIRECT" (real station) or "IDW" (estimated)  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ FEATURE: IDW SPATIAL INTERPOLATION                                           │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ PURPOSE: Provide AQI estimates for localities WITHOUT physical sensors       │
+│                                                                              │
+│ THE PROBLEM:                                                                 │
+│ - Delhi NCR has ~44 active monitoring stations                               │
+│ - But 200+ major localities have no direct sensor                            │
+│ - Citizens in those areas have no local AQI data                             │
+│                                                                              │
+│ THE SOLUTION: Inverse Distance Weighting (IDW)                               │
+│ - A geospatial interpolation algorithm                                       │
+│ - Estimates values at unknown points using nearby known values               │
+│ - Closer stations have MORE influence (inverse of distance squared)          │
+│                                                                              │
+│ ALGORITHM (implemented in server/src/services/idwService.js):                │
+│                                                                              │
+│   1. HAVERSINE DISTANCE: Calculate distance between two lat/lon points       │
+│      Formula: 2 * R * arcsin(sqrt(                                           │
+│        sin²((lat2-lat1)/2) + cos(lat1)*cos(lat2)*sin²((lon2-lon1)/2)         │
+│      ))                                                                      │
+│                                                                              │
+│   2. IDW CALCULATION:                                                        │
+│      - For target locality, find all stations within 20km                    │
+│      - Weight = 1 / (distance ^ power), where power = 2                      │
+│      - Interpolated AQI = Σ(weight * station_aqi) / Σ(weight)                │
+│                                                                              │
+│   3. CONFIDENCE SCORE:                                                       │
+│      - Based on: number of nearby stations + average distance                │
+│      - More stations + closer = higher confidence                            │
+│      - Range: 40-100%                                                        │
+│                                                                              │
+│ API ENDPOINT: GET /api/sources/interpolated                                  │
+│ Response: {                                                                  │
+│   total_localities: 228,                                                     │
+│   direct_stations: 2,    // Exact station matches                            │
+│   interpolated: 226,     // IDW-calculated                                   │
+│   avg_confidence: 60,                                                        │
+│   critical_count: 9,     // AQI > 200                                        │
+│   localities: [                                                              │
+│     { name, lat, lon, aqi, level, confidence, method, nearestStation }       │
+│   ]                                                                          │
+│ }                                                                            │
+│                                                                              │
+│ LOCALITIES COVERED (228 total):                                              │
+│ - Central Delhi: Connaught Place, Chandni Chowk, Karol Bagh, ITO...          │
+│ - South Delhi: Saket, Hauz Khas, GK-I/II, Nehru Place, Okhla...              │
+│ - North Delhi: Rohini (Sec 1-22), Pitampura, Model Town, Narela...           │
+│ - East Delhi: Anand Vihar, Laxmi Nagar, Mayur Vihar, Shahdara...             │
+│ - West Delhi: Dwarka (Sec 1-23), Janakpuri, Punjabi Bagh...                  │
+│ - NCR: Noida (20 sectors), Gurgaon (27 areas), Ghaziabad, Faridabad          │
+│                                                                              │
+│ UI IMPLEMENTATION:                                                           │
+│ - Toggle button on Overview page map (top-right corner)                      │
+│ - Toggle button on Sources page (header area)                                │
+│ - Stations: Larger circles (16px), "LIVE" badge, cyan accent                 │
+│ - IDW Points: Smaller circles (12px), "IDW" badge, green accent              │
+│ - Both clickable with popup showing details                                  │
 └──────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -243,6 +308,7 @@ BASE URL: http://localhost:5000 (dev) | https://airpulse-server.onrender.com
 │ /api/dashboard/summary            │ GET    │ Dashboard metrics │
 │ /api/sources                      │ GET    │ Source analysis   │
 │ /api/sources/wards                │ GET    │ Ward breakdown    │
+│ /api/sources/interpolated         │ GET    │ IDW 228 localities│
 │ /api/reports                      │ GET    │ All reports       │
 │ /api/reports                      │ POST   │ Submit report     │
 │ /api/reports/:id/upvote           │ POST   │ Upvote report     │

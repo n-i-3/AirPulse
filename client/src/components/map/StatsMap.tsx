@@ -61,13 +61,27 @@ function MapController({ onBoundsChange }: { onBoundsChange: (bounds: any) => vo
 
 interface StatsMapProps {
     onLocationSelect?: (location: string) => void;
+    viewMode?: 'stations' | 'idw';
 }
 
-export default function StatsMap({ onLocationSelect }: StatsMapProps) {
+interface IDWLocality {
+    name: string;
+    lat: number;
+    lon: number;
+    aqi: number;
+    level: string;
+    confidence: number;
+    method: 'direct' | 'idw';
+    nearestStation?: string;
+}
+
+export default function StatsMap({ onLocationSelect, viewMode = 'stations' }: StatsMapProps) {
     const { theme } = useTheme();
     const [markers, setMarkers] = useState<StationMarker[]>([]);
+    const [idwLocalities, setIdwLocalities] = useState<IDWLocality[]>([]);
     const [loading, setLoading] = useState(false);
     const cacheRef = useRef<Map<string, CacheEntry>>(new Map());
+    const idwCacheRef = useRef<{ data: IDWLocality[]; timestamp: number } | null>(null);
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
     const isLight = theme === 'light';
@@ -83,6 +97,39 @@ export default function StatsMap({ onLocationSelect }: StatsMapProps) {
             });
         }
     }, []);
+
+    // Fetch IDW data when mode changes to IDW
+    useEffect(() => {
+        if (viewMode === 'idw') {
+            fetchIDWData();
+        }
+    }, [viewMode]);
+
+    const fetchIDWData = async () => {
+        // Check cache
+        const now = Date.now();
+        if (idwCacheRef.current && (now - idwCacheRef.current.timestamp) < CACHE_DURATION) {
+            console.log('📦 IDW Cache hit');
+            setIdwLocalities(idwCacheRef.current.data);
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/sources/interpolated`);
+            const data = await response.json();
+
+            if (data.localities && Array.isArray(data.localities)) {
+                console.log(`✅ Loaded ${data.localities.length} IDW localities`);
+                idwCacheRef.current = { data: data.localities, timestamp: now };
+                setIdwLocalities(data.localities);
+            }
+        } catch (err) {
+            console.error('Failed to fetch IDW data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchStations = useCallback(async (bounds: any) => {
         const lat1 = bounds.getSouth().toFixed(2);
@@ -158,8 +205,12 @@ export default function StatsMap({ onLocationSelect }: StatsMapProps) {
 
             <div className="absolute top-4 left-4 z-[500] bg-background/80 backdrop-blur px-3 py-1 rounded-lg border border-border text-xs font-mono text-foreground/70 shadow-lg">
                 <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 bg-green-500 rounded-full" />
-                    <span>{markers.length} STATIONS ACTIVE</span>
+                    <div className={`h-2 w-2 rounded-full ${viewMode === 'idw' ? 'bg-emerald-500' : 'bg-cyan-500'}`} />
+                    <span>
+                        {viewMode === 'idw'
+                            ? `${idwLocalities.length} LOCALITIES (IDW)`
+                            : `${markers.length} STATIONS ACTIVE`}
+                    </span>
                 </div>
             </div>
 
@@ -185,77 +236,232 @@ export default function StatsMap({ onLocationSelect }: StatsMapProps) {
 
                 <MapController onBoundsChange={fetchStations} />
 
-                {markers.map((marker) => (
-                    <CircleMarker
-                        key={marker.uid}
-                        center={[marker.lat, marker.lon]}
-                        radius={16}
-                        pathOptions={{
-                            fillColor: getColor(marker.aqi),
-                            fillOpacity: 0.9,
-                            color: isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
-                            weight: 1,
-                            opacity: 1
-                        }}
-                        eventHandlers={{
-                            mouseover: (e) => {
-                                e.target.setStyle({
-                                    weight: 3,
-                                    color: isLight ? '#000' : '#fff',
-                                    radius: 18
-                                });
-                                e.target.bringToFront();
-                            },
-                            mouseout: (e) => {
-                                e.target.setStyle({
-                                    weight: 1,
-                                    color: isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
-                                    radius: 16
-                                });
-                            },
-                            click: () => {
-                                if (onLocationSelect) {
-                                    onLocationSelect(marker.station.name || 'Unknown Location');
-                                }
-                            }
-                        }}
-                    >
-                        <Tooltip
-                            permanent
-                            direction="center"
-                            className="bg-transparent border-0 shadow-none font-bold font-mono text-[10px]"
-                        >
-                            {marker.aqi}
-                        </Tooltip>
+                {/* Render based on view mode */}
+                {viewMode === 'idw' ? (
+                    // IDW Mode: Show BOTH stations AND interpolated localities
+                    <>
+                        {/* First: Render real stations */}
+                        {markers.map((marker) => (
+                            <CircleMarker
+                                key={`station-${marker.uid}`}
+                                center={[marker.lat, marker.lon]}
+                                radius={16}
+                                pathOptions={{
+                                    fillColor: getColor(marker.aqi),
+                                    fillOpacity: 0.95,
+                                    color: isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)',
+                                    weight: 2,
+                                    opacity: 1
+                                }}
+                                eventHandlers={{
+                                    mouseover: (e) => {
+                                        e.target.setStyle({
+                                            weight: 3,
+                                            color: '#00bcd4',
+                                            radius: 18
+                                        });
+                                        e.target.bringToFront();
+                                    },
+                                    mouseout: (e) => {
+                                        e.target.setStyle({
+                                            weight: 2,
+                                            color: isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)',
+                                            radius: 16
+                                        });
+                                    },
+                                    click: () => {
+                                        if (onLocationSelect) {
+                                            onLocationSelect(marker.station.name || 'Unknown Location');
+                                        }
+                                    }
+                                }}
+                            >
+                                <Tooltip
+                                    permanent
+                                    direction="center"
+                                    className="bg-transparent border-0 shadow-none font-bold font-mono text-[10px]"
+                                >
+                                    {marker.aqi}
+                                </Tooltip>
 
-                        <Popup className="glass-popup" closeButton={false}>
-                            <div className="min-w-[200px] p-1">
-                                <div className="flex justify-between items-start mb-2 pb-2 border-b border-border/10">
-                                    <h3 className="font-bold text-sm text-foreground m-0 truncate pr-2" style={{ maxWidth: '180px' }}>
-                                        {marker.station.name}
-                                    </h3>
-                                    <span className="text-[10px] bg-primary/10 px-1.5 py-0.5 rounded text-primary font-mono">LIVE</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className="text-2xl font-bold font-mono"
-                                        style={{ color: getColor(marker.aqi) }}
-                                    >
-                                        {marker.aqi}
+                                <Popup className="glass-popup" closeButton={false}>
+                                    <div className="min-w-[200px] p-1">
+                                        <div className="flex justify-between items-start mb-2 pb-2 border-b border-border/10">
+                                            <h3 className="font-bold text-sm text-foreground m-0 truncate pr-2" style={{ maxWidth: '180px' }}>
+                                                {marker.station.name}
+                                            </h3>
+                                            <span className="text-[10px] bg-cyan-500/20 px-1.5 py-0.5 rounded text-cyan-400 font-mono">LIVE</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className="text-2xl font-bold font-mono"
+                                                style={{ color: getColor(marker.aqi) }}
+                                            >
+                                                {marker.aqi}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-medium text-foreground/90">
+                                                    Station ID: {marker.uid}
+                                                </span>
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    Last Updated: {marker.station.time.split('T')[1]?.split('+')[0] || 'Recently'}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs font-medium text-foreground/90">
-                                            Station ID: {marker.uid}
-                                        </span>
-                                        <span className="text-[10px] text-muted-foreground">
-                                            Last Updated: {marker.station.time.split('T')[1]?.split('+')[0] || 'Recently'}
-                                        </span>
+                                </Popup>
+                            </CircleMarker>
+                        ))}
+
+                        {/* Second: Render IDW interpolated points (only non-direct to avoid duplicates) */}
+                        {idwLocalities.filter(loc => loc.method === 'idw').map((locality, idx) => (
+                            <CircleMarker
+                                key={`idw-${idx}`}
+                                center={[locality.lat, locality.lon]}
+                                radius={12}
+                                pathOptions={{
+                                    fillColor: getColor(String(locality.aqi || 0)),
+                                    fillOpacity: 0.55,
+                                    color: isLight ? 'rgba(16,185,129,0.4)' : 'rgba(16,185,129,0.4)',
+                                    weight: 1,
+                                    opacity: 1
+                                }}
+                                eventHandlers={{
+                                    mouseover: (e) => {
+                                        e.target.setStyle({
+                                            weight: 2,
+                                            color: '#10b981',
+                                            fillOpacity: 0.8,
+                                            radius: 14
+                                        });
+                                        e.target.bringToFront();
+                                    },
+                                    mouseout: (e) => {
+                                        e.target.setStyle({
+                                            weight: 1,
+                                            color: isLight ? 'rgba(16,185,129,0.4)' : 'rgba(16,185,129,0.4)',
+                                            fillOpacity: 0.55,
+                                            radius: 12
+                                        });
+                                    },
+                                    click: () => {
+                                        if (onLocationSelect) {
+                                            onLocationSelect(locality.name);
+                                        }
+                                    }
+                                }}
+                            >
+                                <Tooltip
+                                    permanent
+                                    direction="center"
+                                    className="bg-transparent border-0 shadow-none font-bold font-mono text-[9px]"
+                                >
+                                    {locality.aqi || '-'}
+                                </Tooltip>
+
+                                <Popup className="glass-popup" closeButton={false}>
+                                    <div className="min-w-[200px] p-1">
+                                        <div className="flex justify-between items-start mb-2 pb-2 border-b border-border/10">
+                                            <h3 className="font-bold text-sm text-foreground m-0 truncate pr-2" style={{ maxWidth: '160px' }}>
+                                                {locality.name}
+                                            </h3>
+                                            <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-400 font-mono">IDW</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className="text-2xl font-bold font-mono"
+                                                style={{ color: getColor(String(locality.aqi || 0)) }}
+                                            >
+                                                {locality.aqi || '-'}
+                                            </div>
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="text-xs font-medium text-foreground/90">
+                                                    {locality.level}
+                                                </span>
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    Confidence: {locality.confidence}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Popup>
+                            </CircleMarker>
+                        ))}
+                    </>
+                ) : (
+                    // Stations Mode: Show real stations
+                    markers.map((marker) => (
+                        <CircleMarker
+                            key={marker.uid}
+                            center={[marker.lat, marker.lon]}
+                            radius={16}
+                            pathOptions={{
+                                fillColor: getColor(marker.aqi),
+                                fillOpacity: 0.9,
+                                color: isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
+                                weight: 1,
+                                opacity: 1
+                            }}
+                            eventHandlers={{
+                                mouseover: (e) => {
+                                    e.target.setStyle({
+                                        weight: 3,
+                                        color: isLight ? '#000' : '#fff',
+                                        radius: 18
+                                    });
+                                    e.target.bringToFront();
+                                },
+                                mouseout: (e) => {
+                                    e.target.setStyle({
+                                        weight: 1,
+                                        color: isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)',
+                                        radius: 16
+                                    });
+                                },
+                                click: () => {
+                                    if (onLocationSelect) {
+                                        onLocationSelect(marker.station.name || 'Unknown Location');
+                                    }
+                                }
+                            }}
+                        >
+                            <Tooltip
+                                permanent
+                                direction="center"
+                                className="bg-transparent border-0 shadow-none font-bold font-mono text-[10px]"
+                            >
+                                {marker.aqi}
+                            </Tooltip>
+
+                            <Popup className="glass-popup" closeButton={false}>
+                                <div className="min-w-[200px] p-1">
+                                    <div className="flex justify-between items-start mb-2 pb-2 border-b border-border/10">
+                                        <h3 className="font-bold text-sm text-foreground m-0 truncate pr-2" style={{ maxWidth: '180px' }}>
+                                            {marker.station.name}
+                                        </h3>
+                                        <span className="text-[10px] bg-primary/10 px-1.5 py-0.5 rounded text-primary font-mono">LIVE</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="text-2xl font-bold font-mono"
+                                            style={{ color: getColor(marker.aqi) }}
+                                        >
+                                            {marker.aqi}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-medium text-foreground/90">
+                                                Station ID: {marker.uid}
+                                            </span>
+                                            <span className="text-[10px] text-muted-foreground">
+                                                Last Updated: {marker.station.time.split('T')[1]?.split('+')[0] || 'Recently'}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </Popup>
-                    </CircleMarker>
-                ))}
+                            </Popup>
+                        </CircleMarker>
+                    ))
+                )}
             </MapContainer>
 
             <style jsx global>{`

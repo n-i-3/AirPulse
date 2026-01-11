@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Header } from "@/components/layout/Header";
-import { AlertTriangle, MapPin, Flame, Wind, Factory, Car, Trash, TrendingUp, Users, Building2, ChevronRight } from "lucide-react";
+import { AlertTriangle, MapPin, Flame, Wind, Factory, Car, Trash, TrendingUp, Users, Building2, ChevronRight, Layers, Radio } from "lucide-react";
 import { BentoCard } from '@/components/dashboard/BentoCard';
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -52,8 +52,10 @@ const sourceConfig = {
 
 export default function WardDashboard() {
     const [data, setData] = useState<DashboardData | null>(null);
+    const [interpolatedData, setInterpolatedData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [selectedWard, setSelectedWard] = useState<string | null>(null);
+    const [viewMode, setViewMode] = useState<'stations' | 'idw'>('stations');
 
     useEffect(() => {
         fetchData();
@@ -63,9 +65,15 @@ export default function WardDashboard() {
 
     const fetchData = async () => {
         try {
+            // Fetch station data
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/sources/wards?lat1=28.4&lng1=76.8&lat2=28.9&lng2=77.4`);
             const result = await response.json();
             setData(result);
+
+            // Fetch interpolated data
+            const idwResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/sources/interpolated`);
+            const idwResult = await idwResponse.json();
+            setInterpolatedData(idwResult);
         } catch (err) {
             console.error('Failed to fetch ward data:', err);
         } finally {
@@ -107,11 +115,50 @@ export default function WardDashboard() {
                             <h1 className="text-3xl font-bold text-white mb-2">Ward-Level Source Attribution Analysis</h1>
                             <p className="text-zinc-400">Granular pollution source identification and mitigation strategies for Delhi NCR</p>
                         </div>
-                        <div className="text-right">
-                            <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Last Updated</div>
-                            <div className="text-sm font-mono text-white">{new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
+                        <div className="flex items-center gap-6">
+                            {/* View Mode Toggle */}
+                            <div className="flex items-center gap-2 bg-zinc-800/60 rounded-xl p-1 border border-white/10">
+                                <button
+                                    onClick={() => setViewMode('stations')}
+                                    className={cn(
+                                        "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                                        viewMode === 'stations'
+                                            ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                                            : "text-zinc-400 hover:text-white"
+                                    )}
+                                >
+                                    <Radio className="h-4 w-4" />
+                                    Stations Only
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('idw')}
+                                    className={cn(
+                                        "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                                        viewMode === 'idw'
+                                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                            : "text-zinc-400 hover:text-white"
+                                    )}
+                                >
+                                    <Layers className="h-4 w-4" />
+                                    IDW Coverage
+                                </button>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Last Updated</div>
+                                <div className="text-sm font-mono text-white">{new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
+                            </div>
                         </div>
                     </div>
+                    {viewMode === 'idw' && interpolatedData && (
+                        <div className="mt-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3">
+                            <Layers className="h-5 w-5 text-emerald-400" />
+                            <div className="text-sm text-emerald-300">
+                                <span className="font-bold">{interpolatedData.total_localities}</span> localities covered using
+                                <span className="font-bold"> Inverse Distance Weighting (IDW)</span> interpolation.
+                                <span className="text-emerald-400/70">Avg Confidence: {interpolatedData.avg_confidence}%</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Executive Summary Cards */}
@@ -122,9 +169,13 @@ export default function WardDashboard() {
                             <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
                                 <MapPin className="h-6 w-6 text-cyan-400" />
                             </div>
-                            <div className="text-3xl font-bold font-mono text-white">{data.total_wards}</div>
+                            <div className="text-3xl font-bold font-mono text-white">
+                                {viewMode === 'idw' ? interpolatedData?.total_localities || 0 : data.total_wards}
+                            </div>
                         </div>
-                        <div className="text-sm text-zinc-400 relative z-10">Total Wards Analyzed</div>
+                        <div className="text-sm text-zinc-400 relative z-10">
+                            {viewMode === 'idw' ? 'Total Localities (IDW)' : 'Total Stations'}
+                        </div>
                     </BentoCard>
 
                     <BentoCard className="p-6 bg-zinc-900/60 border-red-500/30 hover:border-red-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/10 relative group">
@@ -133,7 +184,9 @@ export default function WardDashboard() {
                             <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
                                 <AlertTriangle className="h-6 w-6 text-red-400" />
                             </div>
-                            <div className="text-3xl font-bold font-mono text-red-500">{data.critical_count}</div>
+                            <div className="text-3xl font-bold font-mono text-red-500">
+                                {viewMode === 'idw' ? interpolatedData?.critical_count || 0 : data.critical_count}
+                            </div>
                         </div>
                         <div className="text-sm text-zinc-400 relative z-10">Critical Priority Zones</div>
                         <div className="text-xs text-red-400/60 mt-1 relative z-10">AQI &gt; 200</div>
@@ -181,164 +234,226 @@ export default function WardDashboard() {
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-white/10 bg-black/20">
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">Ward Name</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                        {viewMode === 'idw' ? 'Locality Name' : 'Ward Name'}
+                                    </th>
                                     <th className="px-6 py-4 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wider">AQI Level</th>
                                     <th className="px-6 py-4 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">Primary Sources</th>
-                                    <th className="px-6 py-4 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wider">Priority</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                        {viewMode === 'idw' ? 'Method / Confidence' : 'Primary Sources'}
+                                    </th>
+                                    <th className="px-6 py-4 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                        {viewMode === 'idw' ? 'Nearest Station' : 'Priority'}
+                                    </th>
                                     <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
-                                {data.wards.map((ward, idx) => {
-                                    const aqiLevel = getAQILevel(ward.aqi);
-                                    const isExpanded = selectedWard === ward.ward;
-
-                                    return (
-                                        <React.Fragment key={idx}>
+                                {viewMode === 'idw' && interpolatedData?.localities ? (
+                                    // IDW Mode: Show interpolated localities
+                                    interpolatedData.localities.slice(0, 50).map((locality: any, idx: number) => {
+                                        const aqiLevel = getAQILevel(locality.aqi || 0);
+                                        return (
                                             <motion.tr
+                                                key={idx}
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
-                                                transition={{ delay: idx * 0.02 }}
-                                                className={cn(
-                                                    "hover:bg-white/5 transition-colors cursor-pointer",
-                                                    isExpanded && "bg-cyan-500/5"
-                                                )}
-                                                onClick={() => setSelectedWard(isExpanded ? null : ward.ward)}
+                                                transition={{ delay: idx * 0.01 }}
+                                                className="hover:bg-white/5 transition-colors"
                                             >
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <MapPin className="h-4 w-4 text-cyan-400 flex-shrink-0" />
-                                                        <span className="font-medium text-white">{ward.ward}</span>
+                                                        <MapPin className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+                                                        <span className="font-medium text-white">{locality.name}</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
                                                     <div className="flex items-center justify-center gap-2">
                                                         <div className={cn("h-2 w-2 rounded-full", aqiLevel.color)} />
-                                                        <span className={cn("text-2xl font-bold font-mono", aqiLevel.textColor)}>{ward.aqi}</span>
+                                                        <span className={cn("text-2xl font-bold font-mono", aqiLevel.textColor)}>
+                                                            {locality.aqi || '-'}
+                                                        </span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <span className="text-xs text-zinc-400">{aqiLevel.label}</span>
+                                                    <span className="text-xs text-zinc-400">{locality.level}</span>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-2">
-                                                        {ward.sources.slice(0, 3).map((source, i) => {
-                                                            const config = sourceConfig[source.type.toLowerCase() as keyof typeof sourceConfig];
-                                                            if (!config) return null;
-                                                            const Icon = config.icon;
-                                                            return (
-                                                                <div key={i} className="flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 border border-white/10">
-                                                                    <Icon className="h-3 w-3 text-zinc-400" />
-                                                                    <span className="text-xs text-zinc-300 font-mono">{source.contribution}</span>
-                                                                </div>
-                                                            );
-                                                        })}
+                                                        <span className={cn(
+                                                            "px-2 py-1 rounded text-xs font-mono border",
+                                                            locality.method === 'direct'
+                                                                ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
+                                                                : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                                                        )}>
+                                                            {locality.method === 'direct' ? 'DIRECT' : 'IDW'}
+                                                        </span>
+                                                        <span className="text-xs text-zinc-500">{locality.confidence}%</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <span className={cn(
-                                                        "inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase border",
-                                                        ward.recommendations.priority === 'critical' && "bg-red-500/10 text-red-400 border-red-500/30",
-                                                        ward.recommendations.priority === 'high' && "bg-orange-500/10 text-orange-400 border-orange-500/30",
-                                                        ward.recommendations.priority === 'medium' && "bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
-                                                        ward.recommendations.priority === 'low' && "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                                                    )}>
-                                                        {ward.recommendations.priority}
+                                                    <span className="text-xs text-zinc-400 truncate max-w-[120px] block">
+                                                        {locality.nearestStation || '-'}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <button className="text-cyan-400 hover:text-cyan-300 transition-colors">
-                                                        <ChevronRight className={cn(
-                                                            "h-5 w-5 transition-transform",
-                                                            isExpanded && "rotate-90"
-                                                        )} />
-                                                    </button>
+                                                    <ChevronRight className="h-5 w-5 text-zinc-600" />
                                                 </td>
                                             </motion.tr>
+                                        );
+                                    })
+                                ) : (
+                                    // Stations Mode: Show original ward data
+                                    data.wards.map((ward, idx) => {
+                                        const aqiLevel = getAQILevel(ward.aqi);
+                                        const isExpanded = selectedWard === ward.ward;
 
-                                            {/* Expanded Row */}
-                                            {isExpanded && (
-                                                <tr>
-                                                    <td colSpan={6} className="bg-black/40 border-t border-white/10">
-                                                        <div className="p-8">
-                                                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                                                                {/* Health Advisory */}
-                                                                <div className="lg:col-span-3 p-6 rounded-xl bg-red-500/5 border border-red-500/20">
-                                                                    <div className="flex items-center gap-2 mb-3">
-                                                                        <AlertTriangle className="h-5 w-5 text-red-400" />
-                                                                        <h3 className="font-bold text-red-400 uppercase tracking-wide text-sm">Health Advisory</h3>
+                                        return (
+                                            <React.Fragment key={idx}>
+                                                <motion.tr
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    transition={{ delay: idx * 0.02 }}
+                                                    className={cn(
+                                                        "hover:bg-white/5 transition-colors cursor-pointer",
+                                                        isExpanded && "bg-cyan-500/5"
+                                                    )}
+                                                    onClick={() => setSelectedWard(isExpanded ? null : ward.ward)}
+                                                >
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <MapPin className="h-4 w-4 text-cyan-400 flex-shrink-0" />
+                                                            <span className="font-medium text-white">{ward.ward}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <div className={cn("h-2 w-2 rounded-full", aqiLevel.color)} />
+                                                            <span className={cn("text-2xl font-bold font-mono", aqiLevel.textColor)}>{ward.aqi}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <span className="text-xs text-zinc-400">{aqiLevel.label}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-2">
+                                                            {ward.sources.slice(0, 3).map((source, i) => {
+                                                                const config = sourceConfig[source.type.toLowerCase() as keyof typeof sourceConfig];
+                                                                if (!config) return null;
+                                                                const Icon = config.icon;
+                                                                return (
+                                                                    <div key={i} className="flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 border border-white/10">
+                                                                        <Icon className="h-3 w-3 text-zinc-400" />
+                                                                        <span className="text-xs text-zinc-300 font-mono">{source.contribution}</span>
                                                                     </div>
-                                                                    <p className="text-zinc-200 leading-relaxed">{ward.recommendations.health_advisory}</p>
-                                                                </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <span className={cn(
+                                                            "inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase border",
+                                                            ward.recommendations.priority === 'critical' && "bg-red-500/10 text-red-400 border-red-500/30",
+                                                            ward.recommendations.priority === 'high' && "bg-orange-500/10 text-orange-400 border-orange-500/30",
+                                                            ward.recommendations.priority === 'medium' && "bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
+                                                            ward.recommendations.priority === 'low' && "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                                                        )}>
+                                                            {ward.recommendations.priority}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <button className="text-cyan-400 hover:text-cyan-300 transition-colors">
+                                                            <ChevronRight className={cn(
+                                                                "h-5 w-5 transition-transform",
+                                                                isExpanded && "rotate-90"
+                                                            )} />
+                                                        </button>
+                                                    </td>
+                                                </motion.tr>
 
-                                                                {/* Source Breakdown */}
-                                                                <div>
-                                                                    <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wide">Pollution Source Analysis</h3>
-                                                                    <div className="space-y-3">
-                                                                        {ward.sources.map((source, i) => {
-                                                                            const config = sourceConfig[source.type.toLowerCase() as keyof typeof sourceConfig];
-                                                                            if (!config) return null;
-                                                                            const Icon = config.icon;
-                                                                            return (
-                                                                                <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10">
-                                                                                    <div className="flex items-center justify-between mb-2">
-                                                                                        <div className="flex items-center gap-2">
-                                                                                            <Icon className="h-4 w-4 text-zinc-400" />
-                                                                                            <span className="font-semibold text-white text-sm">{config.label}</span>
+                                                {/* Expanded Row */}
+                                                {isExpanded && (
+                                                    <tr>
+                                                        <td colSpan={6} className="bg-black/40 border-t border-white/10">
+                                                            <div className="p-8">
+                                                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                                                                    {/* Health Advisory */}
+                                                                    <div className="lg:col-span-3 p-6 rounded-xl bg-red-500/5 border border-red-500/20">
+                                                                        <div className="flex items-center gap-2 mb-3">
+                                                                            <AlertTriangle className="h-5 w-5 text-red-400" />
+                                                                            <h3 className="font-bold text-red-400 uppercase tracking-wide text-sm">Health Advisory</h3>
+                                                                        </div>
+                                                                        <p className="text-zinc-200 leading-relaxed">{ward.recommendations.health_advisory}</p>
+                                                                    </div>
+
+                                                                    {/* Source Breakdown */}
+                                                                    <div>
+                                                                        <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wide">Pollution Source Analysis</h3>
+                                                                        <div className="space-y-3">
+                                                                            {ward.sources.map((source, i) => {
+                                                                                const config = sourceConfig[source.type.toLowerCase() as keyof typeof sourceConfig];
+                                                                                if (!config) return null;
+                                                                                const Icon = config.icon;
+                                                                                return (
+                                                                                    <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10">
+                                                                                        <div className="flex items-center justify-between mb-2">
+                                                                                            <div className="flex items-center gap-2">
+                                                                                                <Icon className="h-4 w-4 text-zinc-400" />
+                                                                                                <span className="font-semibold text-white text-sm">{config.label}</span>
+                                                                                            </div>
+                                                                                            <span className="text-xs font-mono px-2 py-1 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                                                                                                {source.contribution}
+                                                                                            </span>
                                                                                         </div>
-                                                                                        <span className="text-xs font-mono px-2 py-1 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30">
-                                                                                            {source.contribution}
-                                                                                        </span>
+                                                                                        <p className="text-xs text-zinc-400 leading-relaxed">{source.details}</p>
+                                                                                        <div className="text-xs text-zinc-600 mt-2 font-mono">Confidence: {source.confidence}</div>
                                                                                     </div>
-                                                                                    <p className="text-xs text-zinc-400 leading-relaxed">{source.details}</p>
-                                                                                    <div className="text-xs text-zinc-600 mt-2 font-mono">Confidence: {source.confidence}</div>
+                                                                                );
+                                                                            })}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Citizen Recommendations */}
+                                                                    <div>
+                                                                        <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
+                                                                            <Users className="h-4 w-4 text-emerald-400" />
+                                                                            For Citizens
+                                                                        </h3>
+                                                                        <div className="space-y-2">
+                                                                            {ward.recommendations.for_citizens.map((rec, i) => (
+                                                                                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+                                                                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
+                                                                                    <span className="text-sm text-zinc-300 leading-relaxed">{rec}</span>
                                                                                 </div>
-                                                                            );
-                                                                        })}
+                                                                            ))}
+                                                                        </div>
                                                                     </div>
-                                                                </div>
 
-                                                                {/* Citizen Recommendations */}
-                                                                <div>
-                                                                    <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
-                                                                        <Users className="h-4 w-4 text-emerald-400" />
-                                                                        For Citizens
-                                                                    </h3>
-                                                                    <div className="space-y-2">
-                                                                        {ward.recommendations.for_citizens.map((rec, i) => (
-                                                                            <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
-                                                                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
-                                                                                <span className="text-sm text-zinc-300 leading-relaxed">{rec}</span>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* Government Recommendations */}
-                                                                <div>
-                                                                    <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
-                                                                        <Building2 className="h-4 w-4 text-blue-400" />
-                                                                        For Authorities
-                                                                    </h3>
-                                                                    <div className="space-y-2">
-                                                                        {ward.recommendations.for_government.map((rec, i) => (
-                                                                            <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
-                                                                                <div className="h-1.5 w-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0" />
-                                                                                <span className="text-sm text-zinc-300 leading-relaxed">{rec}</span>
-                                                                            </div>
-                                                                        ))}
+                                                                    {/* Government Recommendations */}
+                                                                    <div>
+                                                                        <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
+                                                                            <Building2 className="h-4 w-4 text-blue-400" />
+                                                                            For Authorities
+                                                                        </h3>
+                                                                        <div className="space-y-2">
+                                                                            {ward.recommendations.for_government.map((rec, i) => (
+                                                                                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
+                                                                                    <div className="h-1.5 w-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0" />
+                                                                                    <span className="text-sm text-zinc-300 leading-relaxed">{rec}</span>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </React.Fragment>
-                                    );
-                                })}
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </React.Fragment>
+                                        );
+                                    })
+                                )}
                             </tbody>
                         </table>
                     </div>

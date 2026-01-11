@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from 'react';
 import { Header } from "@/components/layout/Header";
 import dynamic from 'next/dynamic';
-import { Activity, Wind, AlertTriangle, Users, ShieldCheck, Map as MapIcon, Zap, Globe, Cpu, TrendingUp } from "lucide-react";
+import { Activity, Wind, AlertTriangle, Users, ShieldCheck, Map as MapIcon, Zap, Globe, Cpu, TrendingUp, Layers, Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
 import wardsData from '@/data/wards.json';
 import { BentoCard } from "@/components/dashboard/BentoCard";
@@ -33,6 +33,7 @@ export default function Home() {
   const [systemConfidence, setSystemConfidence] = useState<number>(0);
   const [activeStations, setActiveStations] = useState<number>(0);
   const [intelEvents, setIntelEvents] = useState<any[]>([]);
+  const [mapViewMode, setMapViewMode] = useState<'stations' | 'idw'>('stations');
   const containerRef = useRef<HTMLDivElement>(null);
 
   /* Mouse tracking effect removed for performance */
@@ -181,8 +182,35 @@ export default function Home() {
 
           {/* Main Map - Hero - Span 8cols */}
           <div className="lg:col-span-8 h-full rounded-2xl overflow-hidden border-2 border-cyan-500/30 bg-zinc-900/80 relative shadow-[0_0_30px_rgba(6,182,212,0.15)] hover:shadow-[0_0_40px_rgba(6,182,212,0.25)] transition-all duration-300">
+            {/* Map Toggle */}
+            <div className="absolute top-4 right-4 z-[600] flex items-center gap-2 bg-zinc-900/90 backdrop-blur rounded-xl p-1 border border-white/10">
+              <button
+                onClick={() => setMapViewMode('stations')}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                  mapViewMode === 'stations'
+                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                    : "text-zinc-400 hover:text-white"
+                )}
+              >
+                <Radio className="h-3 w-3" />
+                Stations
+              </button>
+              <button
+                onClick={() => setMapViewMode('idw')}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                  mapViewMode === 'idw'
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "text-zinc-400 hover:text-white"
+                )}
+              >
+                <Layers className="h-3 w-3" />
+                IDW
+              </button>
+            </div>
             <div className="h-full w-full relative z-0">
-              <StatsMap />
+              <StatsMap viewMode={mapViewMode} />
             </div>
           </div>
 
